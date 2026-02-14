@@ -1,0 +1,71 @@
+[
+  {
+    "id": "badge-marais-explorer",
+    "title": "Explorateur du Marais",
+    "description": "Terminer la visite 'Les mystères du Marais'",
+    "icon": "assets/images/badges/marais-explorer.png",
+    "condition": {
+      "type": "tour_completed",
+      "tourId": "marais-mysteries"
+    }
+  },
+  {
+    "id": "badge-first-tour",
+    "title": "Premier pas",
+    "description": "Terminer votre première visite",
+    "icon": "assets/images/badges/first-tour.png",
+    "condition": {
+      "type": "tours_count",
+      "value": 1
+    }
+  },
+  {
+    "id": "badge-five-tours",
+    "title": "Parisien confirmé",
+    "description": "Terminer 5 visites",
+    "icon": "assets/images/badges/five-tours.png",
+    "condition": {
+      "type": "tours_count",
+      "value": 5
+    }
+  },
+  {
+    "id": "badge-riddler",
+    "title": "Maître des énigmes",
+    "description": "Résoudre 10 énigmes d'affilée sans erreur",
+    "icon": "assets/images/badges/riddler.png",
+    "condition": {
+      "type": "riddles_streak",
+      "value": 10
+    }
+  },
+  {
+    "id": "badge-walker",
+    "title": "Grand marcheur",
+    "description": "Parcourir 10 km au total",
+    "icon": "assets/images/badges/walker.png",
+    "condition": {
+      "type": "distance_total",
+      "value": 10000
+    }
+  },
+  {
+    "id": "badge-perfect-marais",
+    "title": "Score parfait — Le Marais",
+    "description": "Obtenir le score maximum sur la visite du Marais",
+    "icon": "assets/images/badges/perfect-marais.png",
+    "condition": {
+      "type": "perfect_score",
+      "tourId": "marais-mysteries"
+    }
+  },
+  {
+    "id": "badge-speed-runner",
+    "title": "Coureur urbain",
+    "description": "Terminer une visite en moins de la moitié du temps estimé",
+    "icon": "assets/images/badges/speed-runner.png",
+    "condition": {
+      "type": "speed_run"
+    }
+  }
+]

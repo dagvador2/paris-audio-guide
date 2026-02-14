@@ -1,0 +1,22 @@
+{
+  "id": "montmartre-boheme",
+  "title": "Montmartre bohème",
+  "subtitle": "Sur les traces des artistes de la Butte",
+  "description": "Grimpez sur la Butte Montmartre et suivez les pas de Picasso, Renoir, Van Gogh et tant d'autres. Des cabarets légendaires aux ateliers secrets, découvrez le Montmartre des artistes, celui qui a révolutionné l'art au tournant du XXe siècle.",
+  "coverImage": "assets/images/montmartre/cover.jpg",
+  "duration": 90,
+  "distance": 2200,
+  "difficulty": "medium",
+  "theme": "Art",
+  "arrondissements": [18],
+  "startPoint": {
+    "latitude": 48.88420,
+    "longitude": 2.33260,
+    "address": "Place du Tertre, 75018 Paris",
+    "name": "Place du Tertre"
+  },
+  "totalPoints": 500,
+  "tags": ["art", "bohème", "artistes", "montmartre"],
+  "available": false,
+  "checkpoints": []
+}

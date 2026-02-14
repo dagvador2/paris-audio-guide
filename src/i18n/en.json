@@ -1,0 +1,121 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "start": "Start",
+    "continue": "Continue",
+    "finish": "Finish",
+    "share": "Share",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "tabs": {
+    "home": "Explore",
+    "map": "Map",
+    "profile": "Profile"
+  },
+  "home": {
+    "title": "Discover Paris",
+    "subtitle": "Choose your next adventure",
+    "filterAll": "All",
+    "filterHistory": "History",
+    "filterArt": "Art",
+    "filterFood": "Food",
+    "noTours": "No tours available at the moment"
+  },
+  "tour": {
+    "duration": "Duration",
+    "distance": "Distance",
+    "difficulty": "Difficulty",
+    "checkpoints": "Stops",
+    "points": "Points",
+    "easy": "Easy",
+    "medium": "Medium",
+    "hard": "Hard",
+    "startTour": "Start tour",
+    "resumeTour": "Resume tour",
+    "abandonTour": "Abandon tour",
+    "abandonConfirm": "Are you sure you want to abandon this tour? Your progress will be saved.",
+    "arrondissement": "arrondissement",
+    "arrondissements": "arrondissements",
+    "goToStart": "Go to starting point",
+    "nextCheckpoint": "Next stop",
+    "distanceRemaining": "Distance remaining",
+    "checkpoint": "Stop",
+    "of": "of"
+  },
+  "checkpoint": {
+    "reached": "You've arrived!",
+    "listenAudio": "Listen to the story",
+    "readMore": "Read more",
+    "funFact": "Did you know?",
+    "historicalFact": "Historical fact",
+    "continueToNext": "Continue to next stop",
+    "riddleTitle": "Riddle",
+    "riddleHint": "Hint",
+    "riddleSubmit": "Submit",
+    "riddleCorrect": "Correct!",
+    "riddleWrong": "That's not the right answer",
+    "riddleAttemptsLeft": "attempt(s) remaining",
+    "riddleExplanation": "Explanation",
+    "riddlePhotoPrompt": "Take a photo",
+    "riddlePhotoTaken": "I took the photo!",
+    "riddleObservationFound": "I found it!",
+    "riddleSkip": "Skip riddle",
+    "bonusPoints": "Bonus points",
+    "pointsEarned": "Points earned"
+  },
+  "complete": {
+    "congratulations": "Congratulations!",
+    "tourComplete": "Tour complete",
+    "yourScore": "Your score",
+    "totalPoints": "points",
+    "timeSpent": "Time spent",
+    "distanceWalked": "Distance walked",
+    "riddlesSolved": "Riddles solved",
+    "newBadge": "New badge unlocked!",
+    "shareResult": "Share my result",
+    "backToHome": "Back to home"
+  },
+  "map": {
+    "title": "Paris Map",
+    "allTours": "All tours",
+    "startingPoints": "Starting points",
+    "centerOnMe": "Center on me"
+  },
+  "profile": {
+    "title": "My profile",
+    "stats": "Statistics",
+    "toursCompleted": "Tours completed",
+    "totalDistance": "Total distance",
+    "totalScore": "Total score",
+    "badges": "Badges",
+    "badgesUnlocked": "badge(s) unlocked",
+    "history": "History",
+    "noBadges": "No badges yet. Complete tours to unlock them!",
+    "noHistory": "No tours completed yet. Get started!"
+  },
+  "geolocation": {
+    "permissionTitle": "GPS permission required",
+    "permissionMessage": "Paris Audio Guide needs access to your location to guide you during tours.",
+    "permissionDenied": "GPS access was denied. Enable it in settings to use the app.",
+    "openSettings": "Open settings",
+    "signalLost": "GPS signal lost",
+    "signalLostMessage": "Try moving to a more open area."
+  },
+  "audio": {
+    "play": "Play",
+    "pause": "Pause",
+    "loading": "Loading audio..."
+  },
+  "notification": {
+    "checkpointReached": "You've arrived at {{name}}!",
+    "checkpointReachedBody": "Tap to discover the content of this stop."
+  }
+}

@@ -1,0 +1,205 @@
+{
+  "id": "marais-mysteries",
+  "title": "Les mystères du Marais",
+  "subtitle": "Un voyage dans le temps au cœur de Paris",
+  "description": "Plongez dans l'un des quartiers les plus fascinants de Paris. Du splendide Place des Vosges aux ruelles médiévales, découvrez les secrets, les légendes et les personnages qui ont façonné le Marais au fil des siècles. Entre hôtels particuliers et passages cachés, laissez-vous guider par les mystères de ce quartier unique.",
+  "coverImage": "assets/images/marais/cover.jpg",
+  "duration": 75,
+  "distance": 1800,
+  "difficulty": "easy",
+  "theme": "Histoire",
+  "arrondissements": [3, 4],
+  "startPoint": {
+    "latitude": 48.85565,
+    "longitude": 2.36558,
+    "address": "Place des Vosges, 75004 Paris",
+    "name": "Place des Vosges"
+  },
+  "totalPoints": 650,
+  "tags": ["histoire", "architecture", "littérature", "patrimoine"],
+  "available": true,
+  "checkpoints": [
+    {
+      "id": "marais-cp-1",
+      "tourId": "marais-mysteries",
+      "order": 1,
+      "title": "Place des Vosges",
+      "location": {
+        "latitude": 48.85565,
+        "longitude": 2.36558,
+        "address": "Place des Vosges, 75004 Paris",
+        "name": "Place des Vosges"
+      },
+      "triggerRadius": 30,
+      "content": {
+        "audioFile": "assets/audio/marais/checkpoint-1.mp3",
+        "audioDuration": 180,
+        "title": "La plus ancienne place de Paris",
+        "narrativeText": "Bienvenue sur la Place des Vosges, la plus ancienne place monumentale de Paris. Construite entre 1605 et 1612 sur ordre d'Henri IV, elle s'appelait à l'origine la Place Royale. Imaginez : ici même se dressait autrefois l'Hôtel des Tournelles, résidence royale où Henri II trouva la mort lors d'un tournoi en 1559. Catherine de Médicis, effondrée, fit raser le palais. Il faudra attendre presque 50 ans pour que cette place renaisse de ses cendres, plus belle que jamais.",
+        "historicalFact": "La place fut renommée 'Place des Vosges' en 1800 en l'honneur du premier département français à avoir payé ses impôts.",
+        "images": [
+          {
+            "uri": "assets/images/marais/place-des-vosges.jpg",
+            "caption": "La Place des Vosges et ses arcades",
+            "credit": "Paris Audio Guide"
+          }
+        ],
+        "funFact": "Les 36 pavillons de la place sont construits en brique rouge et pierre blanche, mais la plupart des briques sont en réalité… de la fausse brique peinte sur du plâtre !"
+      },
+      "riddle": {
+        "id": "riddle-marais-1",
+        "type": "multiple_choice",
+        "question": "Combien de pavillons identiques composent la Place des Vosges ?",
+        "hint": "Comptez les façades sur un côté et multipliez…",
+        "options": ["28", "32", "36", "40"],
+        "correctAnswerIndex": 2,
+        "explanation": "La Place des Vosges est composée de 36 pavillons : 9 de chaque côté, dont 2 pavillons plus hauts — le Pavillon du Roi au sud et le Pavillon de la Reine au nord.",
+        "maxAttempts": 3
+      },
+      "points": 100,
+      "bonusPoints": 50,
+      "nextCheckpointHint": "Dirigez-vous vers le coin sud-est de la place. Sous les arcades, une porte discrète vous mènera vers la demeure d'un géant de la littérature française…"
+    },
+    {
+      "id": "marais-cp-2",
+      "tourId": "marais-mysteries",
+      "order": 2,
+      "title": "Maison de Victor Hugo",
+      "location": {
+        "latitude": 48.85530,
+        "longitude": 2.36620,
+        "address": "6 Place des Vosges, 75004 Paris",
+        "name": "Maison de Victor Hugo"
+      },
+      "triggerRadius": 25,
+      "content": {
+        "audioFile": "assets/audio/marais/checkpoint-2.mp3",
+        "audioDuration": 150,
+        "title": "Dans l'intimité d'un génie",
+        "narrativeText": "Vous voici devant le 6 Place des Vosges, où Victor Hugo vécut de 1832 à 1848, ses années les plus prolifiques. C'est entre ces murs qu'il écrivit une grande partie des Misérables et de Ruy Blas. L'appartement au deuxième étage, aujourd'hui musée, conserve l'atmosphère de cette époque. Hugo n'était pas seulement écrivain : il était aussi un décorateur passionné, créant lui-même des meubles extravagants à partir d'objets chinés.",
+        "historicalFact": "Victor Hugo dessinait énormément — on a retrouvé plus de 4 000 dessins de sa main, souvent réalisés avec du café, de la suie ou du charbon.",
+        "images": [
+          {
+            "uri": "assets/images/marais/maison-hugo.jpg",
+            "caption": "La façade de la Maison de Victor Hugo",
+            "credit": "Paris Audio Guide"
+          }
+        ],
+        "funFact": "Hugo recevait tellement de courrier de ses admirateurs que l'adresse 'M. Victor Hugo, en son avenue, à Paris' suffisait au facteur pour livrer le courrier !"
+      },
+      "points": 100,
+      "hint": "Cherchez le numéro 6 sous les arcades du côté sud-est de la place.",
+      "nextCheckpointHint": "Sortez de la place par le passage qui se trouve juste à côté de la maison de Hugo. Vous allez découvrir l'un des plus beaux hôtels particuliers du Marais…"
+    },
+    {
+      "id": "marais-cp-3",
+      "tourId": "marais-mysteries",
+      "order": 3,
+      "title": "Hôtel de Sully",
+      "location": {
+        "latitude": 48.85464,
+        "longitude": 2.36271,
+        "address": "62 Rue Saint-Antoine, 75004 Paris",
+        "name": "Hôtel de Sully"
+      },
+      "triggerRadius": 30,
+      "content": {
+        "audioFile": "assets/audio/marais/checkpoint-3.mp3",
+        "audioDuration": 160,
+        "title": "Le duc et ses secrets",
+        "narrativeText": "L'Hôtel de Sully est l'un des plus beaux exemples d'architecture Louis XIII à Paris. Construit en 1624, il fut racheté par le duc de Sully, ancien ministre d'Henri IV. La cour d'honneur, avec ses façades richement sculptées représentant les Éléments et les Saisons, est un chef-d'œuvre de la Renaissance tardive. Mais ce que peu de visiteurs savent, c'est que ce bâtiment cache un passage secret : en traversant les deux cours, on débouche directement… sur la Place des Vosges !",
+        "historicalFact": "Le duc de Sully avait 74 ans quand il acheta cet hôtel. Il y vécut ses dernières années, connu dans le quartier pour son tempérament colérique et son avarice légendaire.",
+        "images": [
+          {
+            "uri": "assets/images/marais/hotel-de-sully.jpg",
+            "caption": "La cour intérieure de l'Hôtel de Sully",
+            "credit": "Paris Audio Guide"
+          }
+        ],
+        "funFact": "L'Hôtel de Sully abrite aujourd'hui le Centre des Monuments Nationaux, qui gère près de 100 monuments historiques en France."
+      },
+      "riddle": {
+        "id": "riddle-marais-3",
+        "type": "observation",
+        "question": "Sur la façade de la cour d'honneur, trouvez la sculpture représentant l'Automne.",
+        "observationPrompt": "Levez les yeux vers les niches sculptées de la façade principale. L'Automne est représenté par une figure tenant des grappes de raisin.",
+        "hint": "Regardez les sculptures dans les niches au premier étage de la façade sur cour.",
+        "explanation": "Les quatre saisons sont représentées dans les niches de la cour : le Printemps avec des fleurs, l'Été avec des épis de blé, l'Automne avec des raisins, et l'Hiver emmitouflé dans un manteau.",
+        "maxAttempts": 1
+      },
+      "points": 100,
+      "bonusPoints": 50,
+      "nextCheckpointHint": "Continuez sur la rue Saint-Antoine puis tournez à gauche dans la rue des Rosiers. Vous entrez dans le cœur historique du quartier juif du Marais…"
+    },
+    {
+      "id": "marais-cp-4",
+      "tourId": "marais-mysteries",
+      "order": 4,
+      "title": "Rue des Rosiers",
+      "location": {
+        "latitude": 48.85710,
+        "longitude": 2.35777,
+        "address": "Rue des Rosiers, 75004 Paris",
+        "name": "Rue des Rosiers"
+      },
+      "triggerRadius": 30,
+      "content": {
+        "audioFile": "assets/audio/marais/checkpoint-4.mp3",
+        "audioDuration": 170,
+        "title": "Le cœur battant du Marais juif",
+        "narrativeText": "La rue des Rosiers est le cœur du quartier juif de Paris, le Pletzl (la 'petite place' en yiddish). Depuis le XIIIe siècle, cette rue est un lieu de vie de la communauté juive ashkénaze. Les devantures mêlent épiceries traditionnelles, restaurants de falafels et boulangeries proposant des bagels et des strudels. Chaque façade raconte une histoire : celle des vagues d'immigration, des persécutions, de la Shoah, mais aussi de la résilience et du renouveau culturel.",
+        "historicalFact": "Le 9 août 1982, un attentat terroriste frappa le restaurant Goldenberg au 7 rue des Rosiers, faisant 6 morts et 22 blessés. Une plaque commémorative rappelle ce drame.",
+        "images": [
+          {
+            "uri": "assets/images/marais/rue-des-rosiers.jpg",
+            "caption": "L'ambiance unique de la rue des Rosiers",
+            "credit": "Paris Audio Guide"
+          }
+        ],
+        "funFact": "Le nom 'des Rosiers' ne vient pas des fleurs mais probablement des rosiers qui ornaient les jardins des couvents voisins au Moyen Âge."
+      },
+      "riddle": {
+        "id": "riddle-marais-4",
+        "type": "text_input",
+        "question": "Quel est le nom du célèbre restaurant de falafels, devenu une institution de la rue des Rosiers ?",
+        "hint": "Son nom commence par 'L'As'…",
+        "acceptedAnswers": ["L'As du Fallafel", "las du fallafel", "as du fallafel", "L'As du Falafel", "las du falafel", "as du falafel"],
+        "explanation": "L'As du Fallafel, fondé dans les années 1970, est devenu une véritable institution parisienne. Sa file d'attente légendaire attire aussi bien les touristes que les Parisiens !",
+        "maxAttempts": 3
+      },
+      "points": 100,
+      "bonusPoints": 50,
+      "nextCheckpointHint": "Continuez vers le nord en direction de la rue de Sévigné. Votre destination finale vous attend : un musée qui raconte l'histoire entière de Paris…"
+    },
+    {
+      "id": "marais-cp-5",
+      "tourId": "marais-mysteries",
+      "order": 5,
+      "title": "Musée Carnavalet",
+      "location": {
+        "latitude": 48.85760,
+        "longitude": 2.36240,
+        "address": "23 Rue de Sévigné, 75003 Paris",
+        "name": "Musée Carnavalet"
+      },
+      "triggerRadius": 30,
+      "content": {
+        "audioFile": "assets/audio/marais/checkpoint-5.mp3",
+        "audioDuration": 190,
+        "title": "La mémoire de Paris",
+        "narrativeText": "Le Musée Carnavalet est le plus ancien musée de la Ville de Paris, consacré à l'histoire de la capitale depuis la Préhistoire. Installé dans deux hôtels particuliers — l'Hôtel Carnavalet (XVIe siècle) et l'Hôtel Le Peletier de Saint-Fargeau (XVIIe siècle) — il possède plus de 625 000 œuvres. Après une spectaculaire rénovation achevée en 2021, le musée offre un parcours chronologique passionnant, de la pirogue néolithique retrouvée dans la Seine aux affiches de Mai 68.",
+        "historicalFact": "Madame de Sévigné, célèbre pour ses lettres, vécut dans l'Hôtel Carnavalet de 1677 à 1696. Ses appartements sont reconstitués dans le musée.",
+        "images": [
+          {
+            "uri": "assets/images/marais/musee-carnavalet.jpg",
+            "caption": "La cour d'honneur du Musée Carnavalet",
+            "credit": "Paris Audio Guide"
+          }
+        ],
+        "funFact": "Le musée conserve la chambre de Marcel Proust, reconstituée avec ses meubles originaux, y compris le lit où il écrivit une grande partie d'À la recherche du temps perdu."
+      },
+      "points": 100,
+      "hint": "Le musée se trouve au 23 rue de Sévigné, reconnaissable à sa belle façade Renaissance."
+    }
+  ]
+}

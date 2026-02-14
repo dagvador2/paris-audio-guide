@@ -1,0 +1,121 @@
+{
+  "common": {
+    "loading": "Chargement...",
+    "error": "Une erreur est survenue",
+    "retry": "Réessayer",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "close": "Fermer",
+    "back": "Retour",
+    "next": "Suivant",
+    "start": "Commencer",
+    "continue": "Continuer",
+    "finish": "Terminer",
+    "share": "Partager",
+    "yes": "Oui",
+    "no": "Non"
+  },
+  "tabs": {
+    "home": "Explorer",
+    "map": "Carte",
+    "profile": "Profil"
+  },
+  "home": {
+    "title": "Découvrir Paris",
+    "subtitle": "Choisissez votre prochaine aventure",
+    "filterAll": "Toutes",
+    "filterHistory": "Histoire",
+    "filterArt": "Art",
+    "filterFood": "Gastronomie",
+    "noTours": "Aucune visite disponible pour le moment"
+  },
+  "tour": {
+    "duration": "Durée",
+    "distance": "Distance",
+    "difficulty": "Difficulté",
+    "checkpoints": "Étapes",
+    "points": "Points",
+    "easy": "Facile",
+    "medium": "Moyen",
+    "hard": "Difficile",
+    "startTour": "Commencer la visite",
+    "resumeTour": "Reprendre la visite",
+    "abandonTour": "Abandonner la visite",
+    "abandonConfirm": "Êtes-vous sûr de vouloir abandonner cette visite ? Votre progression sera sauvegardée.",
+    "arrondissement": "arrondissement",
+    "arrondissements": "arrondissements",
+    "goToStart": "Se rendre au point de départ",
+    "nextCheckpoint": "Prochain point",
+    "distanceRemaining": "Distance restante",
+    "checkpoint": "Étape",
+    "of": "sur"
+  },
+  "checkpoint": {
+    "reached": "Vous êtes arrivé !",
+    "listenAudio": "Écouter l'histoire",
+    "readMore": "En savoir plus",
+    "funFact": "Le saviez-vous ?",
+    "historicalFact": "Anecdote historique",
+    "continueToNext": "Continuer vers l'étape suivante",
+    "riddleTitle": "Énigme",
+    "riddleHint": "Indice",
+    "riddleSubmit": "Valider",
+    "riddleCorrect": "Bonne réponse !",
+    "riddleWrong": "Ce n'est pas la bonne réponse",
+    "riddleAttemptsLeft": "essai(s) restant(s)",
+    "riddleExplanation": "Explication",
+    "riddlePhotoPrompt": "Prenez une photo",
+    "riddlePhotoTaken": "J'ai pris la photo !",
+    "riddleObservationFound": "J'ai trouvé !",
+    "riddleSkip": "Passer l'énigme",
+    "bonusPoints": "Points bonus",
+    "pointsEarned": "Points gagnés"
+  },
+  "complete": {
+    "congratulations": "Félicitations !",
+    "tourComplete": "Visite terminée",
+    "yourScore": "Votre score",
+    "totalPoints": "points",
+    "timeSpent": "Temps passé",
+    "distanceWalked": "Distance parcourue",
+    "riddlesSolved": "Énigmes résolues",
+    "newBadge": "Nouveau badge débloqué !",
+    "shareResult": "Partager mon résultat",
+    "backToHome": "Retour à l'accueil"
+  },
+  "map": {
+    "title": "Carte de Paris",
+    "allTours": "Toutes les visites",
+    "startingPoints": "Points de départ",
+    "centerOnMe": "Me localiser"
+  },
+  "profile": {
+    "title": "Mon profil",
+    "stats": "Statistiques",
+    "toursCompleted": "Visites terminées",
+    "totalDistance": "Distance totale",
+    "totalScore": "Score total",
+    "badges": "Badges",
+    "badgesUnlocked": "badge(s) débloqué(s)",
+    "history": "Historique",
+    "noBadges": "Aucun badge pour le moment. Terminez des visites pour en débloquer !",
+    "noHistory": "Aucune visite terminée. Lancez-vous !"
+  },
+  "geolocation": {
+    "permissionTitle": "Autorisation GPS requise",
+    "permissionMessage": "Paris Audio Guide a besoin d'accéder à votre position pour vous guider pendant les visites.",
+    "permissionDenied": "L'accès GPS a été refusé. Activez-le dans les réglages pour utiliser l'application.",
+    "openSettings": "Ouvrir les réglages",
+    "signalLost": "Signal GPS perdu",
+    "signalLostMessage": "Essayez de vous déplacer dans un endroit plus dégagé."
+  },
+  "audio": {
+    "play": "Lecture",
+    "pause": "Pause",
+    "loading": "Chargement audio..."
+  },
+  "notification": {
+    "checkpointReached": "Vous êtes arrivé à {{name}} !",
+    "checkpointReachedBody": "Appuyez pour découvrir le contenu de cette étape."
+  }
+}
