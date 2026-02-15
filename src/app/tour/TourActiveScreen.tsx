@@ -1,46 +1,60 @@
 /**
  * Écran principal pendant une visite active.
- * Carte en haut, progression et infos du prochain checkpoint en bas.
+ * Carte plein écran avec bottom sheet glissant (map + contenu).
  */
 
-import React, { useEffect, useRef } from 'react';
-import { StyleSheet, Text, View, ScrollView, Alert } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { StyleSheet, View, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
 import { RootStackParamList } from '../../navigation/types';
 import { useActiveTour } from '../../hooks/useActiveTour';
+import { useTourStore } from '../../stores/useTourStore';
 import { TourMapView } from '../../components/map/TourMapView';
-import { ProgressBar } from '../../components/ui/ProgressBar';
-import { DirectionIndicator } from '../../components/tour/DirectionIndicator';
-import { TourTimeline } from '../../components/tour/TourTimeline';
-import { Button } from '../../components/ui/Button';
-import { COLORS, SPACING, FONTS } from '../../utils/constants';
+import { TourBottomSheet } from '../../components/tour/TourBottomSheet';
+import { COLORS } from '../../utils/constants';
 
 export function TourActiveScreen() {
   const { t } = useTranslation();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const tourStore = useTourStore();
   const {
-    tour, progress, activeCheckpointIndex, nextCheckpoint, totalCheckpoints,
+    tour, mode, progress, activeCheckpointIndex, nextCheckpoint, totalCheckpoints,
     isLastCheckpoint, isNavigating, userLocation, distanceToNext, gpsError,
     abandonTour, completeTour,
   } = useActiveTour();
 
   const prevReachedCount = useRef(0);
+  const bottomSheetControlsRef = useRef<{ snapToIndex: (index: number) => void } | null>(null);
+  const [currentCheckpoint, setCurrentCheckpoint] = useState<any>(null);
 
-  // Navigate to Checkpoint screen when new checkpoint reached
+  // Update current checkpoint when new checkpoint is reached
   useEffect(() => {
-    if (!progress) return;
+    if (!progress || !tour) return;
     const currentCount = progress.checkpointsReached.length;
+
     if (currentCount > prevReachedCount.current && currentCount > 0) {
       const lastReached = progress.checkpointsReached[currentCount - 1];
-      navigation.navigate('Checkpoint', {
-        tourId: tour?.id ?? '',
-        checkpointId: lastReached.checkpointId,
-      });
+      const checkpoint = tour.checkpoints.find(cp => cp.id === lastReached.checkpointId);
+
+      if (checkpoint) {
+        setCurrentCheckpoint(checkpoint);
+
+        // Open bottom sheet to FULL if checkpoint has immersive experience
+        if (checkpoint.content.immersiveExperience) {
+          bottomSheetControlsRef.current?.snapToIndex(2); // FULL position
+        } else {
+          // Navigate to Checkpoint screen for classic experience
+          navigation.navigate('Checkpoint', {
+            tourId: tour.id,
+            checkpointId: checkpoint.id,
+          });
+        }
+      }
     }
     prevReachedCount.current = currentCount;
-  }, [progress?.checkpointsReached.length]);
+  }, [progress?.checkpointsReached.length, tour, navigation]);
 
   // Navigate to complete screen when all checkpoints reached
   useEffect(() => {
@@ -53,7 +67,17 @@ export function TourActiveScreen() {
   if (!tour || !progress) return null;
 
   const reachedIds = progress.checkpointsReached.map((cp) => cp.checkpointId);
-  const progressValue = totalCheckpoints > 0 ? reachedIds.length / totalCheckpoints : 0;
+
+  const handleImmersiveComplete = () => {
+    if (currentCheckpoint) {
+      tourStore.markAudioListened(currentCheckpoint.id);
+    }
+  };
+
+  const handleImmersiveQuizAnswered = (quizId: string, correct: boolean, responseTimeMs: number) => {
+    // Store quiz results (can be enhanced later)
+    console.log('Quiz answered:', { quizId, correct, responseTimeMs });
+  };
 
   const handleAbandon = () => {
     Alert.alert(t('tour.abandonTour'), t('tour.abandonConfirm'), [
@@ -71,53 +95,38 @@ export function TourActiveScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Carte */}
-      <View style={styles.mapContainer}>
-        <TourMapView
-          checkpoints={tour.checkpoints}
-          reachedCheckpointIds={reachedIds}
-          activeCheckpointIndex={activeCheckpointIndex}
-          userLocation={userLocation}
-        />
-      </View>
+      {/* Carte plein écran */}
+      <TourMapView
+        checkpoints={tour.checkpoints}
+        reachedCheckpointIds={reachedIds}
+        activeCheckpointIndex={activeCheckpointIndex}
+        userLocation={userLocation}
+        mode={mode ?? 'escape_game'}
+        bottomSheetPeekHeight={100} // Height of peek bar
+      />
 
-      {/* Panel info */}
-      <ScrollView style={styles.panel} showsVerticalScrollIndicator={false}>
-        <ProgressBar progress={progressValue} showLabel />
-        <Text style={styles.progressText}>
-          {t('tour.checkpoint')} {reachedIds.length} {t('tour.of')} {totalCheckpoints}
-        </Text>
-
-        {nextCheckpoint && (
-          <View style={styles.nextInfo}>
-            <Text style={styles.nextTitle}>{nextCheckpoint.title}</Text>
-            <DirectionIndicator distanceMeters={distanceToNext} />
-          </View>
-        )}
-
-        {gpsError && <Text style={styles.errorText}>{gpsError}</Text>}
-
-        <TourTimeline
-          checkpoints={tour.checkpoints}
-          reachedCheckpointIds={reachedIds}
-          activeIndex={activeCheckpointIndex}
-        />
-
-        <View style={styles.abandonContainer}>
-          <Button title={t('tour.abandonTour')} onPress={handleAbandon} variant="outline" />
-        </View>
-      </ScrollView>
+      {/* Bottom Sheet glissant */}
+      <TourBottomSheet
+        tour={tour}
+        mode={mode ?? 'escape_game'}
+        progress={progress}
+        activeCheckpointIndex={activeCheckpointIndex}
+        nextCheckpoint={nextCheckpoint}
+        totalCheckpoints={totalCheckpoints}
+        distanceToNext={distanceToNext}
+        gpsError={gpsError}
+        onAbandonTour={handleAbandon}
+        immersiveExperience={currentCheckpoint?.content.immersiveExperience}
+        onImmersiveComplete={handleImmersiveComplete}
+        onImmersiveQuizAnswered={handleImmersiveQuizAnswered}
+        onBottomSheetReady={(controls) => {
+          bottomSheetControlsRef.current = controls;
+        }}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
-  mapContainer: { flex: 1, minHeight: 280 },
-  panel: { flex: 1, padding: SPACING.lg },
-  progressText: { fontSize: FONTS.sizes.sm, color: COLORS.textSecondary, marginTop: SPACING.xs, marginBottom: SPACING.md },
-  nextInfo: { alignItems: 'center', marginBottom: SPACING.md },
-  nextTitle: { fontSize: FONTS.sizes.lg, fontWeight: '600', color: COLORS.textPrimary, marginBottom: SPACING.sm },
-  errorText: { color: COLORS.error, fontSize: FONTS.sizes.sm, textAlign: 'center', marginVertical: SPACING.sm },
-  abandonContainer: { marginTop: SPACING.lg, marginBottom: SPACING.xxl },
 });

@@ -38,6 +38,7 @@
     "easy": "Easy",
     "medium": "Medium",
     "hard": "Hard",
+    "startPoint": "Starting point",
     "startTour": "Start tour",
     "resumeTour": "Resume tour",
     "abandonTour": "Abandon tour",
@@ -48,7 +49,16 @@
     "nextCheckpoint": "Next stop",
     "distanceRemaining": "Distance remaining",
     "checkpoint": "Stop",
-    "of": "of"
+    "of": "of",
+    "chooseMode": "Choose your mode",
+    "escapeGameMode": "Escape Game",
+    "escapeGameDescription": "Riddles, clues, and mystery progression. The path reveals itself as you advance.",
+    "guidedMode": "Guided Tour",
+    "guidedDescription": "Full path visible from the start. Listen to stories without riddles.",
+    "step": "Step",
+    "expandBottomSheet": "Tap to expand details",
+    "progress": "Progress",
+    "swipeUpForMore": "Swipe up to see more ⌃"
   },
   "checkpoint": {
     "reached": "You've arrived!",

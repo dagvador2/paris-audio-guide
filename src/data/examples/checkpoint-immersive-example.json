@@ -1,0 +1,103 @@
+{
+  "id": "marais-cp-1-immersive",
+  "tourId": "marais-mysteries",
+  "order": 1,
+  "title": "Place des Vosges",
+  "location": {
+    "latitude": 48.85565,
+    "longitude": 2.36558,
+    "address": "Place des Vosges, 75004 Paris",
+    "name": "Place des Vosges"
+  },
+  "triggerRadius": 30,
+  "content": {
+    "audioFile": "assets/audio/marais/checkpoint-1-immersive.mp3",
+    "audioDuration": 90,
+    "title": "La plus ancienne place de Paris",
+    "narrativeText": "Texte de fallback si immersive experience pas supportée",
+    "immersiveExperience": {
+      "audioFile": "assets/audio/marais/checkpoint-1-immersive.mp3",
+      "audioDurationMillis": 90000,
+      "autoScrollEnabled": true,
+      "scrollLockFuture": true,
+      "transcript": [
+        {
+          "id": "seg-1",
+          "startTimeMillis": 0,
+          "endTimeMillis": 8000,
+          "text": "Bienvenue sur la Place des Vosges, la plus ancienne place monumentale de Paris.",
+          "speakerStyle": "narrator"
+        },
+        {
+          "id": "seg-2",
+          "startTimeMillis": 8000,
+          "endTimeMillis": 18000,
+          "text": "Construite entre 1605 et 1612 sur ordre d'Henri IV, elle s'appelait à l'origine la Place Royale.",
+          "speakerStyle": "narrator"
+        },
+        {
+          "id": "seg-3",
+          "startTimeMillis": 18000,
+          "endTimeMillis": 32000,
+          "text": "Imaginez : ici même se dressait autrefois l'Hôtel des Tournelles, résidence royale où Henri II trouva la mort lors d'un tournoi en 1559.",
+          "speakerStyle": "thought"
+        },
+        {
+          "id": "seg-4",
+          "startTimeMillis": 32000,
+          "endTimeMillis": 50000,
+          "text": "Regardez autour de vous : 36 pavillons identiques, construits en brique rouge et pierre blanche.",
+          "speakerStyle": "narrator"
+        },
+        {
+          "id": "seg-5",
+          "startTimeMillis": 50000,
+          "endTimeMillis": 65000,
+          "text": "Mais attention... La plupart des briques sont en réalité de la fausse brique ! Peinte sur du plâtre. Une illusion architecturale parfaite.",
+          "speakerStyle": "character"
+        },
+        {
+          "id": "seg-6",
+          "startTimeMillis": 65000,
+          "endTimeMillis": 90000,
+          "text": "Avant de partir, ne manquez pas le numéro 6 : la maison de Victor Hugo. Mais ceci est une autre histoire...",
+          "speakerStyle": "thought"
+        }
+      ],
+      "contextImages": [
+        {
+          "id": "img-1",
+          "triggerTimeMillis": 30000,
+          "uri": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Place_des_Vosges_panorama.jpg/1200px-Place_des_Vosges_panorama.jpg",
+          "caption": "La Place des Vosges aujourd'hui",
+          "credit": "Wikimedia Commons",
+          "position": "inline"
+        },
+        {
+          "id": "img-2",
+          "triggerTimeMillis": 60000,
+          "uri": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Henri_IV_en_Hercule_terrassant_l%27hydre_de_Lerne_cad_la_Ligue_Catholique_Atelier_de_Toussaint_Dubreuil_circa_1600.jpg/800px-Henri_IV_en_Hercule_terrassant_l%27hydre_de_Lerne_cad_la_Ligue_Catholique_Atelier_de_Toussaint_Dubreuil_circa_1600.jpg",
+          "caption": "Henri IV, commanditaire de la place",
+          "credit": "Musée du Louvre",
+          "position": "inline"
+        }
+      ],
+      "quizzes": [
+        {
+          "id": "quiz-1",
+          "triggerTimeMillis": 45000,
+          "question": "Combien de pavillons composent la Place des Vosges ?",
+          "options": ["28", "32", "36", "40"],
+          "correctAnswerIndex": 2,
+          "explanation": "La Place des Vosges est composée de 36 pavillons identiques : 9 de chaque côté, dont 2 pavillons plus hauts.",
+          "timerSeconds": 15,
+          "pauseAudio": true,
+          "resumeAfterAnswer": true
+        }
+      ]
+    }
+  },
+  "points": 100,
+  "bonusPoints": 50,
+  "nextCheckpointHint": "Dirigez-vous vers le coin sud-est de la place. Sous les arcades, une porte discrète vous mènera vers la demeure d'un géant de la littérature française…"
+}

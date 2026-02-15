@@ -38,6 +38,7 @@
     "easy": "Facile",
     "medium": "Moyen",
     "hard": "Difficile",
+    "startPoint": "Point de départ",
     "startTour": "Commencer la visite",
     "resumeTour": "Reprendre la visite",
     "abandonTour": "Abandonner la visite",
@@ -48,7 +49,16 @@
     "nextCheckpoint": "Prochain point",
     "distanceRemaining": "Distance restante",
     "checkpoint": "Étape",
-    "of": "sur"
+    "of": "sur",
+    "chooseMode": "Choisissez votre mode",
+    "escapeGameMode": "Escape Game",
+    "escapeGameDescription": "Énigmes, indices et progression mystère. Le parcours se révèle au fur et à mesure.",
+    "guidedMode": "Visite guidée",
+    "guidedDescription": "Parcours complet visible dès le départ. Écoutez les histoires sans énigmes.",
+    "step": "Étape",
+    "expandBottomSheet": "Toucher pour agrandir les détails",
+    "progress": "Progression",
+    "swipeUpForMore": "Glisser vers le haut pour voir plus ⌃"
   },
   "checkpoint": {
     "reached": "Vous êtes arrivé !",

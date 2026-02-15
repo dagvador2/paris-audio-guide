@@ -4,12 +4,13 @@
  * les checkpoints avec leur statut, et les cercles de geofencing.
  */
 
-import React, { useRef, useCallback } from 'react';
+import React, { useRef, useCallback, useState, useEffect } from 'react';
 import { StyleSheet, View, TouchableOpacity, Text } from 'react-native';
 import MapView, { Polyline, Marker, PROVIDER_DEFAULT } from 'react-native-maps';
 import { useTranslation } from 'react-i18next';
-import { Checkpoint, GeoPoint } from '../../types';
+import { Checkpoint, GeoPoint, TourMode } from '../../types';
 import { GeofenceCircle } from './GeofenceCircle';
+import { fetchWalkingRoute } from '../../services/routing';
 import { COLORS, SPACING, BORDER_RADIUS, FONTS, MAP_ZOOM_TOUR } from '../../utils/constants';
 
 interface TourMapViewProps {
@@ -18,6 +19,8 @@ interface TourMapViewProps {
   activeCheckpointIndex: number;
   userLocation: GeoPoint | null;
   showGeofence?: boolean;
+  mode?: TourMode;
+  bottomSheetPeekHeight?: number;
 }
 
 export function TourMapView({
@@ -26,6 +29,8 @@ export function TourMapView({
   activeCheckpointIndex,
   userLocation,
   showGeofence = true,
+  mode = 'escape_game',
+  bottomSheetPeekHeight = 100,
 }: TourMapViewProps) {
   const { t } = useTranslation();
   const mapRef = useRef<MapView>(null);
@@ -40,10 +45,27 @@ export function TourMapView({
     return COLORS.checkpointLocked;
   };
 
-  const routeCoords = checkpoints.map((cp) => ({
+  // En mode guidé : route complète. En escape : pas de route.
+  const allCoords = checkpoints.map((cp) => ({
     latitude: cp.location.latitude,
     longitude: cp.location.longitude,
   }));
+
+  const [routeCoords, setRouteCoords] = useState(allCoords);
+
+  useEffect(() => {
+    if (mode !== 'guided') return;
+
+    const points = checkpoints.map((cp) => cp.location);
+    if (points.length < 2) {
+      setRouteCoords(allCoords);
+      return;
+    }
+
+    fetchWalkingRoute(points).then((route) => {
+      setRouteCoords(route ?? allCoords);
+    });
+  }, [checkpoints, mode]);
 
   const centerOnUser = useCallback(() => {
     if (userLocation && mapRef.current) {
@@ -67,7 +89,7 @@ export function TourMapView({
     <View style={styles.container}>
       <MapView
         ref={mapRef}
-        style={styles.map}
+        style={[styles.map, { paddingBottom: bottomSheetPeekHeight }]}
         provider={PROVIDER_DEFAULT}
         initialRegion={initialRegion}
         showsUserLocation
@@ -75,19 +97,28 @@ export function TourMapView({
         showsCompass
         mapType="standard"
       >
-        {/* Tracé du parcours */}
-        <Polyline
-          coordinates={routeCoords}
-          strokeColor={COLORS.mapRoute}
-          strokeWidth={3}
-          lineDashPattern={[10, 5]}
-        />
+        {/* Tracé du parcours — uniquement en mode guidé */}
+        {mode === 'guided' && (
+          <Polyline
+            coordinates={routeCoords}
+            strokeColor={COLORS.mapRoute}
+            strokeWidth={3}
+            lineDashPattern={[10, 5]}
+          />
+        )}
 
         {/* Marqueurs des checkpoints */}
         {checkpoints.map((checkpoint, index) => {
-          const color = getMarkerColor(checkpoint, index);
           const isReached = reachedCheckpointIds.includes(checkpoint.id);
           const isNext = index === activeCheckpointIndex;
+
+          // In escape mode, hide future checkpoints beyond the next one
+          if (mode === 'escape_game' && !isReached && !isNext) {
+            return null;
+          }
+
+          const color = getMarkerColor(checkpoint, index);
+          const showTitle = mode === 'guided' || isReached;
 
           return (
             <Marker
@@ -96,7 +127,7 @@ export function TourMapView({
                 latitude: checkpoint.location.latitude,
                 longitude: checkpoint.location.longitude,
               }}
-              title={checkpoint.title}
+              title={showTitle ? checkpoint.title : `${t('tour.checkpoint')} ${checkpoint.order}`}
               description={isReached ? '✓' : `${t('tour.checkpoint')} ${checkpoint.order}`}
             >
               <View
@@ -105,7 +136,7 @@ export function TourMapView({
                   { backgroundColor: color },
                   isNext && styles.markerNext,
                 ]}
-                accessibilityLabel={`${t('tour.checkpoint')} ${checkpoint.order}: ${checkpoint.title}`}
+                accessibilityLabel={`${t('tour.checkpoint')} ${checkpoint.order}${showTitle ? ': ' + checkpoint.title : ''}`}
               >
                 <Text style={styles.markerText}>
                   {isReached ? '✓' : checkpoint.order}
@@ -126,7 +157,7 @@ export function TourMapView({
 
       {/* Bouton recentrer */}
       <TouchableOpacity
-        style={styles.centerButton}
+        style={[styles.centerButton, { bottom: bottomSheetPeekHeight + SPACING.md }]}
         onPress={centerOnUser}
         accessibilityLabel={t('map.centerOnMe')}
         accessibilityRole="button"
