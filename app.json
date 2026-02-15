@@ -18,7 +18,13 @@
       "infoPlist": {
         "NSLocationWhenInUseUsageDescription": "Paris Audio Guide utilise votre position pour vous guider pendant les visites et déclencher les contenus aux points d'intérêt.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "Paris Audio Guide utilise votre position en arrière-plan pour continuer à vous guider même quand l'application n'est pas au premier plan.",
-        "UIBackgroundModes": ["audio", "location"]
+        "UIBackgroundModes": [
+          "audio",
+          "location",
+          "audio",
+          "location"
+        ],
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
@@ -32,7 +38,10 @@
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
         "ACCESS_BACKGROUND_LOCATION",
-        "FOREGROUND_SERVICE"
+        "FOREGROUND_SERVICE",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
       ],
       "config": {
         "googleMaps": {
@@ -63,6 +72,11 @@
           "microphonePermission": false
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "391f9226-7495-40dd-b4dd-446e1ef580bf"
+      }
+    }
   }
 }

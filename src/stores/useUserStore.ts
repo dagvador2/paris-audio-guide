@@ -112,7 +112,8 @@ export const useUserStore = create<UserState & UserActions>((set, get) => ({
               t.tourId === condition.tourId &&
               t.status === 'completed' &&
               t.riddlesCorrect === t.riddlesTotal &&
-              t.riddlesTotal > 0
+              t.riddlesTotal > 0 &&
+              (t.mode ?? 'escape_game') === 'escape_game'
           );
           break;
         case 'riddles_streak':

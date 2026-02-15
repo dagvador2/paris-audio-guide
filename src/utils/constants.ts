@@ -21,6 +21,10 @@ export const MAP_ZOOM_TOUR = {
   longitudeDelta: 0.01,
 };
 
+// Routing (OpenRouteService — piéton)
+export const ORS_API_KEY = 'eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6ImE2NzdmZWRkZDM1MzQ2NDJhOGY1N2Q0YWJlYWY3YWFiIiwiaCI6Im11cm11cjY0In0=';
+export const ORS_DIRECTIONS_URL = 'https://api.openrouteservice.org/v2/directions/foot-walking/geojson';
+
 // Audio
 export const AUDIO_AUTO_PLAY = true;
 

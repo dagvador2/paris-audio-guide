@@ -22,7 +22,8 @@ export function CheckpointScreen() {
   const { t } = useTranslation();
   const route = useRoute<RouteProp<RootStackParamList, 'Checkpoint'>>();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { activeTour, solveRiddle, markAudioListened } = useTourStore();
+  const { activeTour, progress, solveRiddle, markAudioListened } = useTourStore();
+  const tourMode = progress?.mode ?? 'escape_game';
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const [riddleDone, setRiddleDone] = useState(false);
 
@@ -57,7 +58,9 @@ export function CheckpointScreen() {
           {/* Header */}
           <Text style={styles.arrived}>{t('checkpoint.reached')}</Text>
           <Text style={styles.title}>{checkpoint.title}</Text>
-          <Text style={styles.points}>+{checkpoint.points} {t('checkpoint.pointsEarned')}</Text>
+          {tourMode === 'escape_game' && (
+            <Text style={styles.points}>+{checkpoint.points} {t('checkpoint.pointsEarned')}</Text>
+          )}
 
           {/* Audio */}
           <AudioPlayer
@@ -100,17 +103,17 @@ export function CheckpointScreen() {
             </ScrollView>
           )}
 
-          {/* Énigme */}
-          {riddle && !riddleDone && (
+          {/* Énigme — escape game uniquement */}
+          {tourMode === 'escape_game' && riddle && !riddleDone && (
             <RiddleCard riddle={riddle} onSolved={handleRiddleSolved} onSkip={handleRiddleSkip} />
           )}
 
-          {riddle && riddleDone && checkpoint.bonusPoints && (
+          {tourMode === 'escape_game' && riddle && riddleDone && checkpoint.bonusPoints && (
             <Text style={styles.bonusText}>+{checkpoint.bonusPoints} {t('checkpoint.bonusPoints')}</Text>
           )}
 
-          {/* Indice vers le prochain */}
-          {checkpoint.nextCheckpointHint && (
+          {/* Indice vers le prochain — escape game uniquement */}
+          {tourMode === 'escape_game' && checkpoint.nextCheckpointHint && (
             <Card style={styles.hintCard}>
               <Text style={styles.hintText}>🧭 {checkpoint.nextCheckpointHint}</Text>
             </Card>

@@ -84,6 +84,7 @@ export function useActiveTour() {
 
   return {
     tour: tourStore.activeTour,
+    mode: tourStore.mode,
     progress: tourStore.progress,
     activeCheckpointIndex: tourStore.activeCheckpointIndex,
     nextCheckpoint,

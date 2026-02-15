@@ -6,7 +6,7 @@
 
 import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Tour, UserProgress, CheckpointProgress, Checkpoint } from '../types';
+import { Tour, TourMode, UserProgress, CheckpointProgress, Checkpoint } from '../types';
 import { STORAGE_KEYS } from '../utils/constants';
 
 interface TourState {
@@ -14,10 +14,11 @@ interface TourState {
   activeCheckpointIndex: number;
   progress: UserProgress | null;
   isNavigating: boolean;
+  mode: TourMode | null;
 }
 
 interface TourActions {
-  startTour: (tour: Tour) => Promise<void>;
+  startTour: (tour: Tour, mode: TourMode) => Promise<void>;
   reachCheckpoint: (checkpointId: string, points: number) => void;
   solveRiddle: (checkpointId: string, correct: boolean, bonusPoints: number) => void;
   markAudioListened: (checkpointId: string) => void;
@@ -44,13 +45,17 @@ export const useTourStore = create<TourState & TourActions>((set, get) => ({
   activeCheckpointIndex: 0,
   progress: null,
   isNavigating: false,
+  mode: null,
 
-  startTour: async (tour: Tour) => {
+  startTour: async (tour: Tour, mode: TourMode) => {
     const now = new Date().toISOString();
-    const riddlesTotal = tour.checkpoints.filter((cp) => cp.riddle).length;
+    const riddlesTotal = mode === 'escape_game'
+      ? tour.checkpoints.filter((cp) => cp.riddle).length
+      : 0;
 
     const initialProgress: UserProgress = {
       tourId: tour.id,
+      mode,
       startedAt: now,
       checkpointsReached: [],
       totalScore: 0,
@@ -66,6 +71,7 @@ export const useTourStore = create<TourState & TourActions>((set, get) => ({
       activeCheckpointIndex: 0,
       progress: initialProgress,
       isNavigating: true,
+      mode,
     };
 
     set(newState);
@@ -100,6 +106,7 @@ export const useTourStore = create<TourState & TourActions>((set, get) => ({
         activeCheckpointIndex: nextIndex,
         progress: updatedProgress,
         isNavigating: state.isNavigating,
+        mode: state.mode,
       });
 
       return newState;
@@ -132,6 +139,7 @@ export const useTourStore = create<TourState & TourActions>((set, get) => ({
         activeCheckpointIndex: state.activeCheckpointIndex,
         progress: updatedProgress,
         isNavigating: state.isNavigating,
+        mode: state.mode,
       });
 
       return { progress: updatedProgress };
@@ -169,6 +177,7 @@ export const useTourStore = create<TourState & TourActions>((set, get) => ({
       activeCheckpointIndex: state.activeCheckpointIndex,
       progress: updatedProgress,
       isNavigating: false,
+      mode: state.mode,
     });
   },
 
@@ -176,18 +185,13 @@ export const useTourStore = create<TourState & TourActions>((set, get) => ({
     const state = get();
     if (!state.progress) return;
 
-    const updatedProgress: UserProgress = {
-      ...state.progress,
-      status: 'abandoned',
-    };
-
-    set({ progress: updatedProgress, isNavigating: false });
-    await persistState({
-      activeTour: state.activeTour,
-      activeCheckpointIndex: state.activeCheckpointIndex,
-      progress: updatedProgress,
-      isNavigating: false,
-    });
+    // Nettoyage complet : la visite abandonnée ne doit plus bloquer le choix de mode
+    set({ activeTour: null, activeCheckpointIndex: 0, progress: null, isNavigating: false, mode: null });
+    try {
+      await AsyncStorage.removeItem(STORAGE_KEYS.ACTIVE_TOUR);
+    } catch (error) {
+      console.error('[useTourStore] Failed to clear on abandon:', error);
+    }
   },
 
   updateDistance: (meters: number) => {
@@ -217,6 +221,9 @@ export const useTourStore = create<TourState & TourActions>((set, get) => ({
       if (!raw) return;
       const saved = JSON.parse(raw) as TourState;
       if (saved.activeTour && saved.progress?.status === 'in_progress') {
+        // Backward compat: default to escape_game if no mode saved
+        if (!saved.mode) saved.mode = 'escape_game';
+        if (saved.progress && !saved.progress.mode) saved.progress.mode = 'escape_game';
         set(saved);
       }
     } catch (error) {
@@ -225,7 +232,7 @@ export const useTourStore = create<TourState & TourActions>((set, get) => ({
   },
 
   clearActiveTour: async () => {
-    set({ activeTour: null, activeCheckpointIndex: 0, progress: null, isNavigating: false });
+    set({ activeTour: null, activeCheckpointIndex: 0, progress: null, isNavigating: false, mode: null });
     try {
       await AsyncStorage.removeItem(STORAGE_KEYS.ACTIVE_TOUR);
     } catch (error) {

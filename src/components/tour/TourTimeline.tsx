@@ -5,16 +5,19 @@
 
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { Checkpoint } from '../../types';
+import { useTranslation } from 'react-i18next';
+import { Checkpoint, TourMode } from '../../types';
 import { COLORS, SPACING } from '../../utils/constants';
 
 interface TourTimelineProps {
   checkpoints: Checkpoint[];
   reachedCheckpointIds: string[];
   activeIndex: number;
+  mode?: TourMode;
 }
 
-export function TourTimeline({ checkpoints, reachedCheckpointIds, activeIndex }: TourTimelineProps) {
+export function TourTimeline({ checkpoints, reachedCheckpointIds, activeIndex, mode = 'escape_game' }: TourTimelineProps) {
+  const { t } = useTranslation();
   const getStatus = (cp: Checkpoint, i: number) => {
     if (reachedCheckpointIds.includes(cp.id)) return 'reached';
     if (i === activeIndex) return 'active';
@@ -30,21 +33,30 @@ export function TourTimeline({ checkpoints, reachedCheckpointIds, activeIndex }:
         const color = statusColor[status];
         const isLast = i === checkpoints.length - 1;
 
+        // In escape mode, hide upcoming checkpoints
+        if (mode === 'escape_game' && status === 'upcoming') {
+          return null;
+        }
+
         return (
           <View key={cp.id} style={styles.row}>
             <View style={styles.left}>
               <View style={[styles.circle, { backgroundColor: status === 'upcoming' ? 'transparent' : color, borderColor: color }, status === 'active' && styles.circleActive]}>
                 {status === 'reached' ? (
                   <Text style={styles.check}>✓</Text>
+                ) : mode === 'escape_game' && status === 'active' ? (
+                  <Text style={[styles.index, { color: '#FFF' }]}>?</Text>
                 ) : (
                   <Text style={[styles.index, status === 'upcoming' && { color }]}>{i + 1}</Text>
                 )}
               </View>
-              {!isLast && <View style={[styles.line, { backgroundColor: color + (status === 'upcoming' ? '40' : 'AA') }]} />}
+              {!isLast && status !== 'upcoming' && <View style={[styles.line, { backgroundColor: color + 'AA' }]} />}
             </View>
             <View style={styles.right}>
               <Text style={[styles.title, status === 'reached' && { color: COLORS.checkpointReached }, status === 'active' && { color: COLORS.checkpointNext, fontWeight: '700' }, status === 'upcoming' && { color: COLORS.textLight }]} numberOfLines={2}>
-                {cp.title}
+                {mode === 'escape_game' && status === 'active'
+                  ? t('tour.nextCheckpoint')
+                  : cp.title}
               </Text>
             </View>
           </View>

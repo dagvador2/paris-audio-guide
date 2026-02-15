@@ -21,10 +21,13 @@ export function TourCompleteScreen() {
 
   if (!progress || !activeTour) return null;
 
+  const isEscapeMode = (progress.mode ?? 'escape_game') === 'escape_game';
+
   const handleShare = async () => {
-    await Share.share({
-      message: `J'ai terminé la visite "${activeTour.title}" sur Paris Audio Guide ! Score : ${progress.totalScore} points 🏛`,
-    });
+    const message = isEscapeMode
+      ? `J'ai terminé l'escape game "${activeTour.title}" sur Paris Audio Guide ! Score : ${progress.totalScore} points 🏛`
+      : `J'ai terminé la visite "${activeTour.title}" sur Paris Audio Guide ! 🏛`;
+    await Share.share({ message });
   };
 
   const handleBackToHome = () => {
@@ -39,11 +42,13 @@ export function TourCompleteScreen() {
         <Text style={styles.congrats}>{t('complete.congratulations')}</Text>
         <Text style={styles.tourTitle}>{activeTour.title}</Text>
 
-        {/* Score */}
-        <View style={styles.scoreCard}>
-          <Text style={styles.scoreValue}>{formatScore(progress.totalScore)}</Text>
-          <Text style={styles.scoreLabel}>{t('complete.totalPoints')}</Text>
-        </View>
+        {/* Score — escape game uniquement */}
+        {isEscapeMode && (
+          <View style={styles.scoreCard}>
+            <Text style={styles.scoreValue}>{formatScore(progress.totalScore)}</Text>
+            <Text style={styles.scoreLabel}>{t('complete.totalPoints')}</Text>
+          </View>
+        )}
 
         {/* Stats */}
         <View style={styles.statsGrid}>
@@ -55,10 +60,12 @@ export function TourCompleteScreen() {
             <Text style={styles.statValue}>{formatDistance(progress.distanceWalkedMeters)}</Text>
             <Text style={styles.statLabel}>{t('complete.distanceWalked')}</Text>
           </View>
-          <View style={styles.statItem}>
-            <Text style={styles.statValue}>{progress.riddlesCorrect}/{progress.riddlesTotal}</Text>
-            <Text style={styles.statLabel}>{t('complete.riddlesSolved')}</Text>
-          </View>
+          {isEscapeMode && (
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>{progress.riddlesCorrect}/{progress.riddlesTotal}</Text>
+              <Text style={styles.statLabel}>{t('complete.riddlesSolved')}</Text>
+            </View>
+          )}
         </View>
 
         {/* Boutons */}
