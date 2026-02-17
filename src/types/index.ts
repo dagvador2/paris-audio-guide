@@ -33,6 +33,8 @@ export interface AudioTranscriptSegment {
   endTimeMillis: number;
   text: string;
   speakerStyle?: 'narrator' | 'character' | 'thought';
+  sectionTitle?: string;
+  sectionSubtitle?: string;
 }
 
 /**
@@ -41,7 +43,7 @@ export interface AudioTranscriptSegment {
 export interface AudioContextImage {
   id: string;
   triggerTimeMillis: number;
-  uri: string;
+  uri: string | number;
   caption?: string;
   credit?: string;
   displayDurationMillis?: number;
@@ -67,7 +69,7 @@ export interface AudioQuiz {
  * Configuration d'une expérience audio immersive
  */
 export interface ImmersiveAudioExperience {
-  audioFile: string;
+  audioFile: string | number;
   audioDurationMillis: number;
   transcript: AudioTranscriptSegment[];
   contextImages?: AudioContextImage[];
@@ -220,7 +222,7 @@ export interface UserState {
 export interface AudioState {
   isPlaying: boolean;
   isLoaded: boolean;
-  currentFile: string | null;
+  currentFile: string | number | null;
   positionMillis: number;
   durationMillis: number;
 }

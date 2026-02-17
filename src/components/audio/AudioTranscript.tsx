@@ -1,97 +1,113 @@
 /**
- * Transcription audio défilante avec auto-scroll et blocage du futur.
- * Affiche les segments révélés progressivement avec les images inline.
+ * Vue scrollable immersive de la transcription audio.
+ *
+ * Thème sombre, auto-scroll vers le segment actif,
+ * images inline et en-têtes de section.
  */
 
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import {
   ScrollView,
   StyleSheet,
   View,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
 } from 'react-native';
 import { AudioTranscriptSegment, AudioContextImage } from '../../types';
 import { TranscriptBubble } from './TranscriptBubble';
 import { InlineImage } from './InlineImage';
-import { COLORS, SPACING } from '../../utils/constants';
+import { SPACING } from '../../utils/constants';
+
+const BG = '#0D0D11';
 
 interface AudioTranscriptProps {
   segments: AudioTranscriptSegment[];
   activeImages: AudioContextImage[];
   autoScrollEnabled: boolean;
   scrollLockFuture: boolean;
+  positionMillis: number;
 }
 
 export function AudioTranscript({
   segments,
   activeImages,
   autoScrollEnabled,
-  scrollLockFuture,
+  positionMillis,
 }: AudioTranscriptProps) {
   const scrollViewRef = useRef<ScrollView>(null);
   const [userScrolled, setUserScrolled] = useState(false);
   const lastSegmentCountRef = useRef(segments.length);
-  const scrollTimeoutRef = useRef<NodeJS.Timeout>();
+  const scrollTimeoutRef = useRef<NodeJS.Timeout>(undefined);
 
-  // Auto-scroll vers le bas quand nouveau segment apparaît
+  // ── Auto-scroll when a new segment appears ─────────────────
   useEffect(() => {
     if (segments.length > lastSegmentCountRef.current) {
       lastSegmentCountRef.current = segments.length;
 
-      // Auto-scroll seulement si user n'a pas scrollé manuellement
       if (!userScrolled && autoScrollEnabled) {
-        // Petit délai pour laisser le composant se render
         setTimeout(() => {
           scrollViewRef.current?.scrollToEnd({ animated: true });
-        }, 100);
+        }, 120);
       }
     }
   }, [segments.length, userScrolled, autoScrollEnabled]);
 
-  // Détecter scroll manuel
-  const handleScrollBeginDrag = () => {
+  // ── Detect manual scroll ───────────────────────────────────
+  const handleScrollBeginDrag = useCallback(() => {
     setUserScrolled(true);
 
-    // Réactiver auto-scroll après 5 secondes d'inactivité
-    if (scrollTimeoutRef.current) {
-      clearTimeout(scrollTimeoutRef.current);
-    }
+    if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
     scrollTimeoutRef.current = setTimeout(() => {
       setUserScrolled(false);
     }, 5000);
-  };
+  }, []);
 
-  // Bloquer scroll vers le futur (optionnel)
-  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    // Note: Le blocage strict du scroll est difficile à implémenter sans affecter l'UX
-    // Pour l'instant, on laisse le scroll libre mais on pourrait ajouter un indicateur visuel
-  };
-
-  // Cleanup timeout
   useEffect(() => {
     return () => {
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
+      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
     };
   }, []);
 
-  // Organiser segments et images par ordre chronologique
-  const renderItems = () => {
-    const items: JSX.Element[] = [];
+  // ── Current segment ID ─────────────────────────────────────
+  const currentSegmentId = useMemo(() => {
+    for (let i = segments.length - 1; i >= 0; i--) {
+      const seg = segments[i];
+      if (positionMillis >= seg.startTimeMillis && positionMillis < seg.endTimeMillis) {
+        return seg.id;
+      }
+    }
+    // If position is past the last segment's end, mark last as current
+    if (segments.length > 0) {
+      const last = segments[segments.length - 1];
+      if (positionMillis >= last.endTimeMillis) return null; // all past
+    }
+    return null;
+  }, [segments, positionMillis]);
 
-    segments.forEach((segment, index) => {
-      // Ajouter le segment
+  // ── Render items (segments + inline images) ────────────────
+  const renderItems = useCallback(() => {
+    const items: React.JSX.Element[] = [];
+
+    segments.forEach((segment) => {
+      // Determine state
+      let state: 'past' | 'active' = 'past';
+      let progress = 1;
+
+      if (segment.id === currentSegmentId) {
+        state = 'active';
+        const elapsed = positionMillis - segment.startTimeMillis;
+        const duration = segment.endTimeMillis - segment.startTimeMillis;
+        progress = duration > 0 ? Math.max(0, Math.min(1, elapsed / duration)) : 1;
+      }
+
       items.push(
         <TranscriptBubble
           key={segment.id}
           segment={segment}
-          index={index}
+          state={state}
+          progress={progress}
         />
       );
 
-      // Ajouter les images inline qui se déclenchent pendant ce segment
+      // Inline images that trigger during this segment
       const segmentImages = activeImages.filter(
         (img) =>
           img.position === 'inline' &&
@@ -105,7 +121,7 @@ export function AudioTranscript({
     });
 
     return items;
-  };
+  }, [segments, activeImages, currentSegmentId, positionMillis]);
 
   return (
     <ScrollView
@@ -113,12 +129,15 @@ export function AudioTranscript({
       style={styles.scrollView}
       contentContainerStyle={styles.content}
       onScrollBeginDrag={handleScrollBeginDrag}
-      onScroll={handleScroll}
       scrollEventThrottle={16}
-      showsVerticalScrollIndicator={true}
+      showsVerticalScrollIndicator={false}
     >
+      {/* Top spacer for breathing room */}
+      <View style={styles.topSpacer} />
+
       {renderItems()}
-      {/* Espace en bas pour le bouton play/pause */}
+
+      {/* Bottom spacer for controls */}
       <View style={styles.bottomSpacer} />
     </ScrollView>
   );
@@ -127,13 +146,15 @@ export function AudioTranscript({
 const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: BG,
   },
   content: {
-    padding: SPACING.md,
-    paddingBottom: SPACING.xl,
+    paddingHorizontal: SPACING.lg,
+  },
+  topSpacer: {
+    height: 60,
   },
   bottomSpacer: {
-    height: 100, // Espace pour AudioControls
+    height: 140,
   },
 });

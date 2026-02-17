@@ -13,7 +13,8 @@ import { useImmersiveAudioSync } from '../../hooks/useImmersiveAudioSync';
 import { AudioTranscript } from './AudioTranscript';
 import { AudioQuizOverlay } from './AudioQuizOverlay';
 import { AudioControls } from './AudioControls';
-import { COLORS } from '../../utils/constants';
+
+const BG = '#0D0D11';
 
 interface ImmersiveAudioExperienceProps {
   experience: ImmersiveAudioExperienceType;
@@ -33,7 +34,7 @@ export function ImmersiveAudioExperience({
   const [activeQuiz, setActiveQuiz] = useState<any>(null);
   const [hasStarted, setHasStarted] = useState(false);
 
-  // Synchronisation audio ↔ UI
+  // Synchronisation audio <-> UI
   const syncHook = useImmersiveAudioSync({
     experience,
     positionMillis: audioStore.positionMillis,
@@ -44,12 +45,8 @@ export function ImmersiveAudioExperience({
         audioPlayer.pause();
       }
     },
-    onSegmentRevealed: (segment) => {
-      // Callback optionnel si besoin
-    },
-    onImageTriggered: (image) => {
-      // Callback optionnel si besoin
-    },
+    onSegmentRevealed: () => {},
+    onImageTriggered: () => {},
   });
 
   // Auto-play au montage
@@ -85,17 +82,13 @@ export function ImmersiveAudioExperience({
     (correct: boolean, responseTimeMs: number) => {
       if (!activeQuiz) return;
 
-      // Callback externe
       onQuizAnswered?.(activeQuiz.id, correct, responseTimeMs);
 
-      // Marquer comme complété dans le hook sync
-      // @ts-ignore - completeQuiz est exporté par le hook
+      // @ts-ignore
       syncHook.completeQuiz?.(activeQuiz.id);
 
-      // Fermer le quiz
       setActiveQuiz(null);
 
-      // Reprendre l'audio si configuré
       if (activeQuiz.resumeAfterAnswer) {
         audioPlayer.play();
       }
@@ -113,21 +106,17 @@ export function ImmersiveAudioExperience({
     } else {
       audioPlayer.play();
     }
-  }, [
-    hasStarted,
-    audioStore.isPlaying,
-    audioPlayer,
-    experience.audioFile,
-  ]);
+  }, [hasStarted, audioStore.isPlaying, audioPlayer, experience.audioFile]);
 
   return (
     <View style={styles.container}>
-      {/* Transcription scrollable */}
+      {/* Transcription scrollable avec highlighting */}
       <AudioTranscript
         segments={syncHook.revealedSegments}
         activeImages={syncHook.activeImages}
         autoScrollEnabled={experience.autoScrollEnabled}
         scrollLockFuture={experience.scrollLockFuture}
+        positionMillis={audioStore.positionMillis}
       />
 
       {/* Quiz overlay */}
@@ -135,10 +124,12 @@ export function ImmersiveAudioExperience({
         <AudioQuizOverlay quiz={activeQuiz} onAnswer={handleQuizAnswer} />
       )}
 
-      {/* Contrôle audio unique */}
+      {/* Contrôle audio avec progression */}
       <AudioControls
         isPlaying={audioStore.isPlaying}
         onPlayPause={handlePlayPause}
+        positionMillis={audioStore.positionMillis}
+        durationMillis={audioStore.durationMillis}
       />
     </View>
   );
@@ -147,7 +138,7 @@ export function ImmersiveAudioExperience({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: BG,
     position: 'relative',
   },
 });

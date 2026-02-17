@@ -9,6 +9,7 @@ export type RootStackParamList = {
   TourActive: { tourId: string };
   TourComplete: { tourId: string };
   Checkpoint: { tourId: string; checkpointId: string };
+  DemoImmersive: undefined;
 };
 
 export type TabParamList = {

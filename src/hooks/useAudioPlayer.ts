@@ -16,7 +16,7 @@ export function useAudioPlayer() {
   }, []);
 
   const loadAndPlay = useCallback(
-    async (filePath: string) => {
+    async (filePath: string | number) => {
       // Stopper l'audio en cours si nécessaire
       if (soundRef.current) {
         await AudioService.stopAudio(soundRef.current);

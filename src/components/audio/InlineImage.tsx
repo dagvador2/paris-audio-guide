@@ -1,12 +1,20 @@
 /**
- * Image inline qui apparaît dans le flux de transcription.
- * Affiche l'image avec sa caption et son crédit.
+ * Image contextuelle inline dans le flux de transcription.
+ * Supporte les assets locaux (require) et les URLs distantes.
+ * Animation de fondu + scale à l'apparition.
  */
 
 import React, { useEffect, useRef } from 'react';
-import { Animated, StyleSheet, Text, View, Image } from 'react-native';
+import { Animated, StyleSheet, Text, View, Image, ImageSourcePropType } from 'react-native';
 import { AudioContextImage } from '../../types';
-import { COLORS, SPACING, BORDER_RADIUS, FONTS } from '../../utils/constants';
+import { SPACING, FONTS, BORDER_RADIUS } from '../../utils/constants';
+
+const IMG_COLORS = {
+  bg: 'rgba(255,255,255,0.06)',
+  caption: 'rgba(255,255,255,0.60)',
+  credit: 'rgba(255,255,255,0.35)',
+  border: 'rgba(255,255,255,0.08)',
+};
 
 interface InlineImageProps {
   image: AudioContextImage;
@@ -14,20 +22,37 @@ interface InlineImageProps {
 
 export function InlineImage({ image }: InlineImageProps) {
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0.95)).current;
 
   useEffect(() => {
-    // Animation fade-in
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 600,
-      useNativeDriver: true,
-    }).start();
-  }, [fadeAnim]);
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.spring(scaleAnim, {
+        toValue: 1,
+        tension: 60,
+        friction: 10,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [fadeAnim, scaleAnim]);
+
+  // Handle both local require() results (number) and remote URIs (string)
+  const imageSource: ImageSourcePropType =
+    typeof image.uri === 'number' ? image.uri : { uri: image.uri };
 
   return (
-    <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
+    <Animated.View
+      style={[
+        styles.container,
+        { opacity: fadeAnim, transform: [{ scale: scaleAnim }] },
+      ]}
+    >
       <Image
-        source={{ uri: image.uri }}
+        source={imageSource}
         style={styles.image}
         resizeMode="cover"
       />
@@ -35,7 +60,7 @@ export function InlineImage({ image }: InlineImageProps) {
         <View style={styles.captionContainer}>
           <Text style={styles.caption}>{image.caption}</Text>
           {image.credit && (
-            <Text style={styles.credit}>© {image.credit}</Text>
+            <Text style={styles.credit}>{image.credit}</Text>
           )}
         </View>
       )}
@@ -45,33 +70,30 @@ export function InlineImage({ image }: InlineImageProps) {
 
 const styles = StyleSheet.create({
   container: {
-    width: '100%',
     marginVertical: SPACING.md,
     borderRadius: BORDER_RADIUS.md,
     overflow: 'hidden',
-    backgroundColor: COLORS.surface,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 3,
+    backgroundColor: IMG_COLORS.bg,
+    borderWidth: 1,
+    borderColor: IMG_COLORS.border,
   },
   image: {
     width: '100%',
     height: 200,
   },
   captionContainer: {
-    padding: SPACING.sm,
-    backgroundColor: COLORS.surface,
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: SPACING.md,
   },
   caption: {
     fontSize: FONTS.sizes.sm,
-    color: COLORS.textPrimary,
-    marginBottom: SPACING.xs,
+    color: IMG_COLORS.caption,
+    fontStyle: 'italic',
+    lineHeight: 20,
   },
   credit: {
     fontSize: FONTS.sizes.xs,
-    color: COLORS.textSecondary,
-    fontStyle: 'italic',
+    color: IMG_COLORS.credit,
+    marginTop: 2,
   },
 });

@@ -10,6 +10,7 @@ import { TourDetailScreen } from '../app/tour/TourDetailScreen';
 import { TourActiveScreen } from '../app/tour/TourActiveScreen';
 import { TourCompleteScreen } from '../app/tour/TourCompleteScreen';
 import { CheckpointScreen } from '../app/checkpoint/CheckpointScreen';
+import { DemoImmersiveScreen } from '../app/demo/DemoImmersiveScreen';
 import { RootStackParamList } from './types';
 import { COLORS } from '../utils/constants';
 
@@ -44,6 +45,15 @@ export function RootNavigator() {
         name="Checkpoint"
         component={CheckpointScreen}
         options={{ animation: 'slide_from_bottom', presentation: 'modal' }}
+      />
+      <Stack.Screen
+        name="DemoImmersive"
+        component={DemoImmersiveScreen}
+        options={{
+          animation: 'fade',
+          headerShown: false,
+          contentStyle: { backgroundColor: '#0D0D11' },
+        }}
       />
     </Stack.Navigator>
   );

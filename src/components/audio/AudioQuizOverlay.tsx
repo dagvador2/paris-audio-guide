@@ -1,19 +1,34 @@
 /**
- * Overlay de quiz interactif qui apparaît pendant l'audio.
+ * Overlay de quiz interactif (thème sombre immersif).
  * Pause l'audio, affiche la question avec timer, et reprend après réponse.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
   Modal,
-  Animated,
 } from 'react-native';
 import { AudioQuiz } from '../../types';
-import { COLORS, SPACING, BORDER_RADIUS, FONTS } from '../../utils/constants';
+import { SPACING, BORDER_RADIUS, FONTS } from '../../utils/constants';
+
+const QUIZ = {
+  overlay: 'rgba(0,0,0,0.80)',
+  surface: '#1A1A22',
+  surfaceBorder: 'rgba(255,255,255,0.08)',
+  accent: '#C4933F',
+  text: '#FFFFFF',
+  textDim: 'rgba(255,255,255,0.65)',
+  optionBg: 'rgba(255,255,255,0.06)',
+  optionBorder: 'rgba(255,255,255,0.12)',
+  correctBg: 'rgba(45,139,70,0.20)',
+  correctBorder: '#2D8B46',
+  wrongBg: 'rgba(211,47,47,0.20)',
+  wrongBorder: '#D32F2F',
+  explanationBg: 'rgba(196,147,63,0.12)',
+};
 
 interface AudioQuizOverlayProps {
   quiz: AudioQuiz;
@@ -44,16 +59,15 @@ export function AudioQuizOverlay({ quiz, onAnswer }: AudioQuizOverlayProps) {
     return () => clearInterval(interval);
   }, [showExplanation]);
 
-  const handleTimeout = () => {
-    // Timeout = mauvaise réponse
+  const handleTimeout = useCallback(() => {
     setShowExplanation(true);
     const responseTime = Date.now() - startTime;
     setTimeout(() => {
       onAnswer(false, responseTime);
-    }, 3000); // 3 sec pour lire explication
-  };
+    }, 3000);
+  }, [startTime, onAnswer]);
 
-  const handleSelectOption = (index: number) => {
+  const handleSelectOption = useCallback((index: number) => {
     if (selectedIndex !== null || showExplanation) return;
 
     setSelectedIndex(index);
@@ -61,27 +75,21 @@ export function AudioQuizOverlay({ quiz, onAnswer }: AudioQuizOverlayProps) {
     const responseTime = Date.now() - startTime;
     setShowExplanation(true);
 
-    // Attendre 3 sec pour lire l'explication avant de continuer
     setTimeout(() => {
       onAnswer(correct, responseTime);
     }, 3000);
-  };
+  }, [selectedIndex, showExplanation, quiz.correctAnswerIndex, startTime, onAnswer]);
 
-  // Couleur du timer (vert → orange → rouge)
+  // Timer color
   const getTimerColor = () => {
     const ratio = timeLeft / quiz.timerSeconds;
-    if (ratio > 0.6) return COLORS.success;
-    if (ratio > 0.3) return '#FF9800'; // Orange
-    return COLORS.error;
+    if (ratio > 0.6) return '#2D8B46';
+    if (ratio > 0.3) return QUIZ.accent;
+    return '#D32F2F';
   };
 
   return (
-    <Modal
-      visible={true}
-      transparent={true}
-      animationType="fade"
-      onRequestClose={() => {}}
-    >
+    <Modal visible transparent animationType="fade" onRequestClose={() => {}}>
       <View style={styles.overlay}>
         <View style={styles.modal}>
           {/* Timer */}
@@ -108,26 +116,34 @@ export function AudioQuizOverlay({ quiz, onAnswer }: AudioQuizOverlayProps) {
           {/* Options */}
           <View style={styles.options}>
             {quiz.options.map((option, index) => {
-              let optionStyle = styles.option;
-              let optionTextStyle = styles.optionText;
+              let bgColor = QUIZ.optionBg;
+              let borderColor = QUIZ.optionBorder;
+              let textColor = QUIZ.text;
 
               if (selectedIndex !== null) {
                 if (index === quiz.correctAnswerIndex) {
-                  optionStyle = [styles.option, styles.optionCorrect];
+                  bgColor = QUIZ.correctBg;
+                  borderColor = QUIZ.correctBorder;
                 } else if (index === selectedIndex) {
-                  optionStyle = [styles.option, styles.optionWrong];
+                  bgColor = QUIZ.wrongBg;
+                  borderColor = QUIZ.wrongBorder;
                 }
               }
 
               return (
                 <TouchableOpacity
                   key={index}
-                  style={optionStyle}
+                  style={[
+                    styles.option,
+                    { backgroundColor: bgColor, borderColor },
+                  ]}
                   onPress={() => handleSelectOption(index)}
                   disabled={selectedIndex !== null}
                   activeOpacity={0.7}
                 >
-                  <Text style={optionTextStyle}>{option}</Text>
+                  <Text style={[styles.optionText, { color: textColor }]}>
+                    {option}
+                  </Text>
                   {selectedIndex !== null && index === quiz.correctAnswerIndex && (
                     <Text style={styles.checkmark}>✓</Text>
                   )}
@@ -139,13 +155,15 @@ export function AudioQuizOverlay({ quiz, onAnswer }: AudioQuizOverlayProps) {
             })}
           </View>
 
-          {/* Explication */}
+          {/* Explanation */}
           {showExplanation && (
             <View style={styles.explanation}>
               <Text style={styles.explanationTitle}>
                 {selectedIndex === quiz.correctAnswerIndex
-                  ? '✅ Correct !'
-                  : '❌ Incorrect'}
+                  ? 'Correct!'
+                  : selectedIndex !== null
+                    ? 'Not quite!'
+                    : 'Time\'s up!'}
               </Text>
               <Text style={styles.explanationText}>{quiz.explanation}</Text>
             </View>
@@ -159,17 +177,19 @@ export function AudioQuizOverlay({ quiz, onAnswer }: AudioQuizOverlayProps) {
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.7)',
+    backgroundColor: QUIZ.overlay,
     justifyContent: 'center',
     alignItems: 'center',
     padding: SPACING.lg,
   },
   modal: {
-    backgroundColor: COLORS.surface,
+    backgroundColor: QUIZ.surface,
     borderRadius: BORDER_RADIUS.lg,
     padding: SPACING.xl,
     width: '100%',
     maxWidth: 400,
+    borderWidth: 1,
+    borderColor: QUIZ.surfaceBorder,
   },
   timerContainer: {
     marginBottom: SPACING.lg,
@@ -181,72 +201,63 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.xs,
   },
   timerBar: {
-    height: 6,
-    backgroundColor: COLORS.border,
-    borderRadius: 3,
+    height: 4,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderRadius: 2,
     overflow: 'hidden',
   },
   timerFill: {
     height: '100%',
+    borderRadius: 2,
   },
   question: {
     fontSize: FONTS.sizes.lg,
     fontWeight: '700',
-    color: COLORS.textPrimary,
+    color: QUIZ.text,
     marginBottom: SPACING.lg,
     textAlign: 'center',
+    lineHeight: 26,
   },
   options: {
     gap: SPACING.sm,
   },
   option: {
-    backgroundColor: COLORS.background,
     padding: SPACING.md,
     borderRadius: BORDER_RADIUS.sm,
-    borderWidth: 2,
-    borderColor: COLORS.border,
+    borderWidth: 1.5,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  optionCorrect: {
-    backgroundColor: '#E8F5E9',
-    borderColor: COLORS.success,
-  },
-  optionWrong: {
-    backgroundColor: '#FFEBEE',
-    borderColor: COLORS.error,
-  },
   optionText: {
     fontSize: FONTS.sizes.md,
-    color: COLORS.textPrimary,
     flex: 1,
   },
   checkmark: {
     fontSize: 20,
-    color: COLORS.success,
+    color: QUIZ.correctBorder,
     fontWeight: '700',
   },
   crossmark: {
     fontSize: 20,
-    color: COLORS.error,
+    color: QUIZ.wrongBorder,
     fontWeight: '700',
   },
   explanation: {
     marginTop: SPACING.lg,
     padding: SPACING.md,
-    backgroundColor: '#E3F2FD',
+    backgroundColor: QUIZ.explanationBg,
     borderRadius: BORDER_RADIUS.sm,
   },
   explanationTitle: {
     fontSize: FONTS.sizes.md,
     fontWeight: '700',
-    color: COLORS.textPrimary,
+    color: QUIZ.accent,
     marginBottom: SPACING.xs,
   },
   explanationText: {
     fontSize: FONTS.sizes.sm,
-    color: COLORS.textPrimary,
+    color: QUIZ.textDim,
     lineHeight: 20,
   },
 });

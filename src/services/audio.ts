@@ -15,9 +15,10 @@ export async function configureAudioSession(): Promise<void> {
   });
 }
 
-export async function loadAudio(filePath: string): Promise<Audio.Sound> {
+export async function loadAudio(source: string | number): Promise<Audio.Sound> {
+  const audioSource = typeof source === 'number' ? source : { uri: source };
   const { sound } = await Audio.Sound.createAsync(
-    { uri: filePath },
+    audioSource as any,
     { shouldPlay: false }
   );
   return sound;

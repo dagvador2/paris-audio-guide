@@ -8,7 +8,7 @@ import { create } from 'zustand';
 interface AudioStoreState {
   isPlaying: boolean;
   isLoaded: boolean;
-  currentFile: string | null;
+  currentFile: string | number | null;
   positionMillis: number;
   durationMillis: number;
 }
@@ -16,7 +16,7 @@ interface AudioStoreState {
 interface AudioStoreActions {
   setPlaying: (playing: boolean) => void;
   setLoaded: (loaded: boolean) => void;
-  setCurrentFile: (file: string | null) => void;
+  setCurrentFile: (file: string | number | null) => void;
   updatePosition: (millis: number) => void;
   setDuration: (millis: number) => void;
   reset: () => void;
@@ -36,7 +36,7 @@ export const useAudioStore = create<AudioStoreState & AudioStoreActions>(
 
     setPlaying: (playing: boolean) => set({ isPlaying: playing }),
     setLoaded: (loaded: boolean) => set({ isLoaded: loaded }),
-    setCurrentFile: (file: string | null) => set({ currentFile: file }),
+    setCurrentFile: (file: string | number | null) => set({ currentFile: file }),
     updatePosition: (millis: number) => set({ positionMillis: millis }),
     setDuration: (millis: number) => set({ durationMillis: millis }),
     reset: () => set({ ...INITIAL_STATE }),

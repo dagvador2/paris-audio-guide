@@ -38,6 +38,14 @@ export function HomeScreen() {
       <View style={styles.header}>
         <Text style={styles.title}>{t('home.title')}</Text>
         <Text style={styles.subtitle}>{t('home.subtitle')}</Text>
+
+        {/* Bouton de démo */}
+        <TouchableOpacity
+          style={styles.demoButton}
+          onPress={() => navigation.navigate('DemoImmersive')}
+        >
+          <Text style={styles.demoButtonText}>🎧 TESTER L'EXPÉRIENCE AUDIO</Text>
+        </TouchableOpacity>
       </View>
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filters}>
@@ -79,4 +87,17 @@ const styles = StyleSheet.create({
   chipTextActive: { color: '#FFF' },
   list: { paddingHorizontal: SPACING.lg, paddingBottom: SPACING.xl },
   empty: { textAlign: 'center', marginTop: SPACING.xxl, fontSize: FONTS.sizes.md, color: COLORS.textLight },
+  demoButton: {
+    marginTop: SPACING.md,
+    backgroundColor: COLORS.primary,
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+    borderRadius: BORDER_RADIUS.md,
+    alignItems: 'center',
+  },
+  demoButtonText: {
+    fontSize: FONTS.sizes.md,
+    fontWeight: '700',
+    color: '#FFF',
+  },
 });
