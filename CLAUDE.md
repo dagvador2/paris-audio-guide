@@ -6,48 +6,44 @@ Application mobile React Native (Expo) — guide audio gamifié géolocalisé po
 
 ---
 
-## MCP Server : 21st.dev Magic
+## MCP Servers UI : Magic UI + shadcn/ui
 
-Ce projet utilise le serveur MCP **21st.dev Magic** pour générer des composants UI de qualité professionnelle. Claude Code doit l'utiliser systématiquement pour créer et améliorer les composants d'interface.
+Ce projet utilise deux serveurs MCP complémentaires pour générer des composants UI de qualité professionnelle. Claude Code doit les utiliser systématiquement pour créer et améliorer les composants d'interface.
 
 ### Installation
 
 ```bash
-# Ajouter le serveur MCP à Claude Code (scope user = disponible sur tous les projets)
-claude mcp add magic --scope user \
-  --env API_KEY="VOTRE_CLE_API_ICI" \
-  -- npx -y @21st-dev/magic@latest
+# Magic UI — composants animés, effets visuels, layouts modernes (fonctionne en local, pas de clé API)
+claude mcp add magicui -- npx -y @magicuidesign/mcp@latest
+
+# shadcn/ui — composants structurels solides avec props TypeScript à jour (serveur distant stable, pas de clé API)
+claude mcp add --transport http shadcn https://www.shadcn.io/api/mcp
 ```
 
-> 🔑 Obtenir une clé API : https://21st.dev/magic/console
+### Rôle de chaque serveur
 
-### Configuration alternative (fichier `.mcp.json` à la racine du projet)
-
-```json
-{
-  "mcpServers": {
-    "@21st-dev/magic": {
-      "command": "npx",
-      "args": ["-y", "@21st-dev/magic@latest"],
-      "env": {
-        "API_KEY": "VOTRE_CLE_API_ICI"
-      }
-    }
-  }
-}
-```
+| Serveur | Rôle | Exemples d'utilisation |
+|---------|------|----------------------|
+| **Magic UI** | Animations, effets visuels, layouts créatifs | Marquee, blur-fade, progress animés, orbiting circles, text animations, grid patterns |
+| **shadcn/ui** | Composants structurels, formulaires, navigation | Boutons, cartes, modales, inputs, tabs, alerts, popovers, selects |
 
 ### Utilisation dans Claude Code
 
-Quand tu travailles sur un composant UI, utilise la commande `/ui` du serveur Magic pour générer des composants de haute qualité. Exemples :
+Quand tu travailles sur un composant UI :
 
-- `/ui create a modern audio player with play/pause, progress bar, and time display`
-- `/ui create a gamified checkpoint card with score, badges, and unlock animation`
-- `/ui create an interactive map marker with pulse animation and status states`
-- `/ui create a vertical timeline component showing tour progress`
-- `/ui create a riddle card with multiple choice answers and feedback animation`
+**Pour les composants structurels (shadcn/ui)** :
+- "use shadcn to create a card component for tour listings"
+- "use shadcn to implement a modal dialog for riddle answers"
+- "use shadcn to build tabs for switching between map and list views"
+- "use shadcn to create an alert for checkpoint reached notification"
 
-**Règle importante** : toujours préférer les composants générés par 21st.dev Magic à des composants écrits manuellement. Ils sont éditables, bien structurés, et suivent les meilleures pratiques de design moderne.
+**Pour les animations et effets visuels (Magic UI)** :
+- "use magicui to add a blur-fade animation on checkpoint reveal"
+- "use magicui to create an animated progress bar for tour completion"
+- "use magicui to add a text animation for score display"
+- "use magicui to create an orbiting animation for badge unlock"
+
+**Règle importante** : toujours préférer les composants issus de ces bibliothèques à des composants écrits manuellement. Ils sont éditables, bien structurés, et suivent les meilleures pratiques de design moderne. Utiliser shadcn pour la structure, Magic UI pour le polish visuel.
 
 ---
 
@@ -78,14 +74,14 @@ Quand tu travailles sur un composant UI, utilise la commande `/ui` du serveur Ma
 - Bouton play/pause proéminent (56px minimum)
 - Affichage du temps écoulé / temps total
 - Fond légèrement translucide si superposé à la carte
-- Utiliser `/ui` de 21st.dev pour la base, puis adapter au thème parisien
+- Base : shadcn/ui pour la structure (slider, boutons) + Magic UI pour les animations de lecture
 
 #### TourCard (liste des visites)
 - Format carte verticale avec image de couverture en haut (ratio 16:9)
 - Overlay gradient sombre en bas de l'image pour la lisibilité du titre
 - Badges de difficulté, durée, distance en bas
 - Animation subtile au tap (scale 0.98)
-- Utiliser `/ui` pour générer une card moderne puis personnaliser
+- Base : shadcn/ui Card + Magic UI blur-fade pour les transitions
 
 #### CheckpointScreen (quand un point est atteint)
 - Transition d'entrée spectaculaire (slide up + fade)
@@ -94,6 +90,7 @@ Quand tu travailles sur un composant UI, utilise la commande `/ui` du serveur Ma
 - Texte narratif scrollable
 - Si énigme : apparition après l'audio (ou après un bouton "Continuer")
 - Bouton "Vers le prochain point" toujours visible en bas
+- Base : Magic UI blur-fade + text-animate pour la révélation du contenu
 
 #### RiddleCard
 - Style quiz élégant — pas gamifié façon enfant
@@ -101,6 +98,7 @@ Quand tu travailles sur un composant UI, utilise la commande `/ui` du serveur Ma
 - Feedback : vert + animation confetti légère si correct, rouge + shake si incorrect
 - Compteur d'essais restants
 - Timer optionnel avec barre de progression circulaire
+- Base : shadcn/ui pour les boutons/inputs + Magic UI animated-circular-progress-bar pour le timer
 
 #### Carte (MapView)
 - Style de carte personnalisé (pas le Google Maps par défaut) — préférer un style sobre/clair
@@ -114,11 +112,12 @@ Quand tu travailles sur un composant UI, utilise la commande `/ui` du serveur Ma
 - Design de badges circulaires, style médailles/insignes vintage
 - Animation de déblocage : apparition avec scale + rotation + particules dorées
 - Collection affichée en grille dans le profil
+- Base : Magic UI orbiting-circles pour l'animation de déblocage
 
 ### Animations (react-native-reanimated)
 
 - **Checkpoint atteint** : vibration haptique + flash lumineux sur l'écran + slide-up du contenu
-- **Bonne réponse** : confettis légers + score qui incrémente avec animation de compteur
+- **Bonne réponse** : confettis légers + score qui incrémente avec animation de compteur (Magic UI number-ticker)
 - **Badge débloqué** : modal avec animation de médaille qui tombe + particules
 - **Transitions d'écran** : shared element transitions quand possible
 - **Marqueur carte** : pulse continu sur le prochain objectif (scale 1.0 → 1.3 → 1.0, loop)
@@ -187,16 +186,17 @@ import { GEOFENCE_DEFAULT_RADIUS } from '@/utils/constants';
 
 ### Créer un nouveau composant UI
 
-1. **D'abord**, utiliser le MCP 21st.dev Magic via `/ui` pour générer une base de composant de qualité
-2. **Ensuite**, adapter le composant au thème parisien (couleurs, typo, espacement)
-3. **Puis**, ajouter les props TypeScript et l'internationalisation
-4. **Enfin**, ajouter les animations si nécessaire
+1. **D'abord**, vérifier si shadcn/ui a un composant de base adapté (bouton, carte, modale, input…)
+2. **Si oui**, utiliser shadcn comme fondation puis personnaliser au thème parisien
+3. **Ensuite**, enrichir avec Magic UI pour les animations et effets visuels
+4. **Puis**, ajouter les props TypeScript et l'internationalisation
+5. **Enfin**, tester sur iOS et Android
 
 ### Créer un nouvel écran
 
 1. Définir l'interface des props et les données nécessaires
 2. Connecter le store Zustand approprié
-3. Composer avec les composants UI existants (générés par 21st.dev)
+3. Composer avec les composants UI existants (shadcn + Magic UI)
 4. Ajouter les clés i18n
 5. Tester la navigation
 
@@ -214,6 +214,6 @@ import { GEOFENCE_DEFAULT_RADIUS } from '@/utils/constants';
 - ⚠️ **Le geofencing est le cœur de l'app** — il doit être fiable et économe en batterie
 - ⚠️ **L'audio doit fonctionner écran verrouillé** — configurer expo-av pour le background audio
 - ⚠️ **Tester avec de vraies coordonnées GPS parisiennes** — le fichier d'exemple utilise le Marais
-- ⚠️ **Utiliser 21st.dev Magic pour CHAQUE composant UI** — c'est la priorité pour la qualité visuelle
+- ⚠️ **Utiliser shadcn/ui + Magic UI pour CHAQUE composant UI** — c'est la priorité pour la qualité visuelle
 - ⚠️ **Pas de backend** — tout est local (JSON + AsyncStorage) pour le MVP
 - ⚠️ **Accessibilité** : `accessibilityLabel` et `accessibilityRole` sur tous les éléments interactifs
