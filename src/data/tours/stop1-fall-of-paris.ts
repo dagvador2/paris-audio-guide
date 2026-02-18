@@ -47,6 +47,8 @@ export const stop1Experience: ImmersiveAudioExperience = {
       endTimeMillis: 6240,
       text: 'All right, so here we are at our second stop, right in front of this building.',
       speakerStyle: 'narrator',
+      sectionTitle: 'Introduction',
+      sectionSubtitle: 'The Luxembourg Palace',
     },
     {
       id: 'intro-2',

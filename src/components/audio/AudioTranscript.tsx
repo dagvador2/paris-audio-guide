@@ -1,8 +1,15 @@
 /**
  * Vue scrollable immersive de la transcription audio.
  *
- * Thème sombre, auto-scroll vers le segment actif,
- * images inline et en-têtes de section.
+ * Theme sombre, auto-scroll fluide vers le segment actif,
+ * images inline et en-tetes de section.
+ *
+ * Scrolling ameliore :
+ *   - Suivi cible du segment actif (pas scrollToEnd brutal)
+ *   - Position cible a ~35% du haut pour confort de lecture
+ *   - Changement de section : scroll en haut pour masquer le texte precedent
+ *   - Delai 350ms pour laisser l'animation d'entree demarrer
+ *   - Detection du scroll manuel avec pause de 5s
  */
 
 import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
@@ -10,6 +17,8 @@ import {
   ScrollView,
   StyleSheet,
   View,
+  Dimensions,
+  LayoutChangeEvent,
 } from 'react-native';
 import { AudioTranscriptSegment, AudioContextImage } from '../../types';
 import { TranscriptBubble } from './TranscriptBubble';
@@ -17,6 +26,13 @@ import { InlineImage } from './InlineImage';
 import { SPACING } from '../../utils/constants';
 
 const BG = '#0D0D11';
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+
+// Normal segments sit at ~35% from top of screen
+const SCROLL_TARGET_RATIO = 0.35;
+
+// Section headers scroll to near-top (just below the banner overlay)
+const TOP_SPACER_HEIGHT = 110;
 
 interface AudioTranscriptProps {
   segments: AudioTranscriptSegment[];
@@ -34,21 +50,90 @@ export function AudioTranscript({
 }: AudioTranscriptProps) {
   const scrollViewRef = useRef<ScrollView>(null);
   const [userScrolled, setUserScrolled] = useState(false);
-  const lastSegmentCountRef = useRef(segments.length);
   const scrollTimeoutRef = useRef<NodeJS.Timeout>(undefined);
 
-  // ── Auto-scroll when a new segment appears ─────────────────
-  useEffect(() => {
-    if (segments.length > lastSegmentCountRef.current) {
-      lastSegmentCountRef.current = segments.length;
+  // ── Track Y positions of each segment ──────────────────────
+  const segmentPositions = useRef<Record<string, number>>({});
+  const prevScrollTarget = useRef<string | null>(null);
 
-      if (!userScrolled && autoScrollEnabled) {
-        setTimeout(() => {
-          scrollViewRef.current?.scrollToEnd({ animated: true });
-        }, 120);
+  const handleSegmentLayout = useCallback(
+    (segmentId: string, event: LayoutChangeEvent) => {
+      segmentPositions.current[segmentId] = event.nativeEvent.layout.y;
+    },
+    [],
+  );
+
+  // ── Current segment ID ─────────────────────────────────────
+  const currentSegmentId = useMemo(() => {
+    for (let i = segments.length - 1; i >= 0; i--) {
+      const seg = segments[i];
+      if (positionMillis >= seg.startTimeMillis && positionMillis < seg.endTimeMillis) {
+        return seg.id;
       }
     }
-  }, [segments.length, userScrolled, autoScrollEnabled]);
+    if (segments.length > 0) {
+      const last = segments[segments.length - 1];
+      if (positionMillis >= last.endTimeMillis) return null;
+    }
+    return null;
+  }, [segments, positionMillis]);
+
+  // ── Smooth scroll to a segment Y position ──────────────────
+  // toTop=true for section changes: header pinned near top of screen
+  // toTop=false for normal: segment at comfortable 35% reading position
+  const scrollToSegment = useCallback(
+    (segmentId: string, delay: number, toTop: boolean) => {
+      if (userScrolled || !autoScrollEnabled) return;
+
+      setTimeout(() => {
+        const y = segmentPositions.current[segmentId];
+        if (y !== undefined) {
+          const target = toTop
+            ? Math.max(0, y - TOP_SPACER_HEIGHT - 5)
+            : Math.max(0, y - SCREEN_HEIGHT * SCROLL_TARGET_RATIO);
+          scrollViewRef.current?.scrollTo({ y: target, animated: true });
+        } else {
+          scrollViewRef.current?.scrollToEnd({ animated: true });
+        }
+      }, delay);
+    },
+    [userScrolled, autoScrollEnabled],
+  );
+
+  // ── Auto-scroll when active segment changes ────────────────
+  useEffect(() => {
+    const targetId = currentSegmentId ?? segments[segments.length - 1]?.id;
+    if (!targetId) return;
+    if (targetId === prevScrollTarget.current) return;
+
+    prevScrollTarget.current = targetId;
+
+    // Check if this segment starts a new section
+    const targetSeg = segments.find((s) => s.id === targetId);
+    const isSectionChange = !!targetSeg?.sectionTitle;
+
+    if (isSectionChange) {
+      // Section change: scroll header to top, longer delay for banner transition
+      scrollToSegment(targetId, 300, true);
+    } else {
+      scrollToSegment(targetId, 350, false);
+    }
+  }, [currentSegmentId, segments, scrollToSegment]);
+
+  // ── Also scroll when a brand new segment is revealed ───────
+  const lastSegmentCount = useRef(segments.length);
+  useEffect(() => {
+    if (segments.length <= lastSegmentCount.current) return;
+    lastSegmentCount.current = segments.length;
+
+    if (userScrolled || !autoScrollEnabled) return;
+
+    const newSeg = segments[segments.length - 1];
+    if (newSeg && prevScrollTarget.current !== newSeg.id) {
+      const isSectionStart = !!newSeg.sectionTitle;
+      scrollToSegment(newSeg.id, 400, isSectionStart);
+    }
+  }, [segments.length, segments, userScrolled, autoScrollEnabled, scrollToSegment]);
 
   // ── Detect manual scroll ───────────────────────────────────
   const handleScrollBeginDrag = useCallback(() => {
@@ -66,28 +151,11 @@ export function AudioTranscript({
     };
   }, []);
 
-  // ── Current segment ID ─────────────────────────────────────
-  const currentSegmentId = useMemo(() => {
-    for (let i = segments.length - 1; i >= 0; i--) {
-      const seg = segments[i];
-      if (positionMillis >= seg.startTimeMillis && positionMillis < seg.endTimeMillis) {
-        return seg.id;
-      }
-    }
-    // If position is past the last segment's end, mark last as current
-    if (segments.length > 0) {
-      const last = segments[segments.length - 1];
-      if (positionMillis >= last.endTimeMillis) return null; // all past
-    }
-    return null;
-  }, [segments, positionMillis]);
-
   // ── Render items (segments + inline images) ────────────────
   const renderItems = useCallback(() => {
     const items: React.JSX.Element[] = [];
 
     segments.forEach((segment) => {
-      // Determine state
       let state: 'past' | 'active' = 'past';
       let progress = 1;
 
@@ -99,12 +167,16 @@ export function AudioTranscript({
       }
 
       items.push(
-        <TranscriptBubble
-          key={segment.id}
-          segment={segment}
-          state={state}
-          progress={progress}
-        />
+        <View
+          key={`wrap-${segment.id}`}
+          onLayout={(e) => handleSegmentLayout(segment.id, e)}
+        >
+          <TranscriptBubble
+            segment={segment}
+            state={state}
+            progress={progress}
+          />
+        </View>,
       );
 
       // Inline images that trigger during this segment
@@ -112,7 +184,7 @@ export function AudioTranscript({
         (img) =>
           img.position === 'inline' &&
           img.triggerTimeMillis >= segment.startTimeMillis &&
-          img.triggerTimeMillis < segment.endTimeMillis
+          img.triggerTimeMillis < segment.endTimeMillis,
       );
 
       segmentImages.forEach((img) => {
@@ -121,7 +193,7 @@ export function AudioTranscript({
     });
 
     return items;
-  }, [segments, activeImages, currentSegmentId, positionMillis]);
+  }, [segments, activeImages, currentSegmentId, positionMillis, handleSegmentLayout]);
 
   return (
     <ScrollView
@@ -132,12 +204,12 @@ export function AudioTranscript({
       scrollEventThrottle={16}
       showsVerticalScrollIndicator={false}
     >
-      {/* Top spacer for breathing room */}
+      {/* Top spacer for SectionBanner */}
       <View style={styles.topSpacer} />
 
       {renderItems()}
 
-      {/* Bottom spacer for controls */}
+      {/* Bottom spacer for AudioControls */}
       <View style={styles.bottomSpacer} />
     </ScrollView>
   );
@@ -152,7 +224,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
   },
   topSpacer: {
-    height: 60,
+    height: 110,
   },
   bottomSpacer: {
     height: 140,

@@ -226,3 +226,13 @@ export interface AudioState {
   positionMillis: number;
   durationMillis: number;
 }
+
+/**
+ * Segment de sous-titres SRT pour synchronisation texte-audio
+ */
+export interface SrtSegment {
+  index: number;
+  startMs: number;
+  endMs: number;
+  text: string;
+}

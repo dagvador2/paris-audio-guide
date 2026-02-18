@@ -12,10 +12,12 @@ import { useTranslation } from 'react-i18next';
 import { RootStackParamList } from '../../navigation/types';
 import { useTourStore } from '../../stores/useTourStore';
 import { AudioPlayer } from '../../components/tour/AudioPlayer';
+import { SyncedNarrativeText } from '../../components/tour/SyncedNarrativeText';
 import { RiddleCard } from '../../components/tour/RiddleCard';
 import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { formatScore } from '../../utils/formatters';
+import { useAudioStore } from '../../stores/useAudioStore';
 import { COLORS, SPACING, FONTS, BORDER_RADIUS } from '../../utils/constants';
 
 export function CheckpointScreen() {
@@ -24,6 +26,7 @@ export function CheckpointScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { activeTour, progress, solveRiddle, markAudioListened } = useTourStore();
   const tourMode = progress?.mode ?? 'escape_game';
+  const { positionMillis, isPlaying } = useAudioStore();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const [riddleDone, setRiddleDone] = useState(false);
 
@@ -70,8 +73,13 @@ export function CheckpointScreen() {
             autoPlay
           />
 
-          {/* Texte narratif */}
-          <Text style={styles.narrative}>{content.narrativeText}</Text>
+          {/* Texte narratif — word-by-word reveal synced with audio */}
+          <SyncedNarrativeText
+            text={content.narrativeText}
+            audioPositionMs={positionMillis}
+            isPlaying={isPlaying}
+            audioDurationMs={content.audioDuration * 1000}
+          />
 
           {/* Anecdote historique */}
           {content.historicalFact && (
@@ -139,7 +147,6 @@ const styles = StyleSheet.create({
   arrived: { fontSize: FONTS.sizes.xl, fontWeight: '700', color: COLORS.success, textAlign: 'center', marginBottom: SPACING.xs },
   title: { fontSize: FONTS.sizes.xxl, fontWeight: '700', color: COLORS.textPrimary, textAlign: 'center', marginBottom: SPACING.xs },
   points: { fontSize: FONTS.sizes.md, color: COLORS.secondary, fontWeight: '600', textAlign: 'center', marginBottom: SPACING.lg },
-  narrative: { fontSize: FONTS.sizes.md, color: COLORS.textPrimary, lineHeight: 24, marginTop: SPACING.lg, marginBottom: SPACING.md },
   factCard: { marginBottom: SPACING.md, backgroundColor: '#FDF6E3' },
   funFactCard: { marginBottom: SPACING.md, backgroundColor: '#F0F7FF' },
   factLabel: { fontSize: FONTS.sizes.sm, fontWeight: '600', color: COLORS.secondary, marginBottom: SPACING.xs },

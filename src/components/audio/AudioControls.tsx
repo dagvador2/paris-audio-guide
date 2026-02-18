@@ -1,29 +1,44 @@
 /**
- * Barre de contrôle audio immersive en bas de l'écran.
+ * Barre de controle audio immersive en bas de l'ecran.
  *
- * Comprend :
- *   - Barre de progression fine
- *   - Bouton play/pause central
- *   - Temps écoulé / durée totale
- *   - Fond semi-transparent
+ * Design moderne style podcast :
+ *   - Barre de progression avec curseur rond dore et halo pulse
+ *   - Bouton play/pause central proéminent
+ *   - Temps ecoule (gauche) + temps restant en -MM:SS (droite)
+ *   - Fond semi-transparent sombre
  */
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect, useRef } from 'react';
 import {
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
+  Animated,
+  Easing,
 } from 'react-native';
-import { SPACING, FONTS } from '../../utils/constants';
+import { SPACING } from '../../utils/constants';
 
-const CONTROLS = {
-  bg: 'rgba(13,13,17,0.92)',
-  progressBg: 'rgba(255,255,255,0.12)',
-  progressFill: '#C4933F',
+// ─── Dimensions ─────────────────────────────────────────────
+const TRACK_HEIGHT = 5;
+const THUMB_SIZE = 14;
+const THUMB_GLOW_SIZE = 24;
+const PLAY_SIZE = 56;
+
+// ─── Palette immersive ──────────────────────────────────────
+const C = {
+  bg: 'rgba(13,13,17,0.94)',
+  trackBg: 'rgba(255,255,255,0.10)',
+  trackFill: '#C4933F',
+  trackFillGlow: 'rgba(196,147,63,0.35)',
+  thumb: '#FFFFFF',
+  thumbBorder: '#C4933F',
+  thumbGlow: 'rgba(196,147,63,0.40)',
   buttonBg: '#C4933F',
   buttonIcon: '#0D0D11',
-  timeText: 'rgba(255,255,255,0.50)',
+  buttonShadow: 'rgba(196,147,63,0.40)',
+  currentTime: 'rgba(255,255,255,0.85)',
+  remainingTime: 'rgba(255,255,255,0.40)',
 };
 
 interface AudioControlsProps {
@@ -51,21 +66,85 @@ export function AudioControls({
     return Math.min(100, (positionMillis / durationMillis) * 100);
   }, [positionMillis, durationMillis]);
 
+  const remainingMs = Math.max(0, durationMillis - positionMillis);
+
+  // Thumb glow pulse when playing
+  const glowAnim = useRef(new Animated.Value(0)).current;
+  const glowRef = useRef<Animated.CompositeAnimation | null>(null);
+
+  useEffect(() => {
+    if (isPlaying) {
+      glowRef.current = Animated.loop(
+        Animated.sequence([
+          Animated.timing(glowAnim, {
+            toValue: 1,
+            duration: 1000,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+          Animated.timing(glowAnim, {
+            toValue: 0,
+            duration: 1000,
+            easing: Easing.inOut(Easing.ease),
+            useNativeDriver: true,
+          }),
+        ]),
+      );
+      glowRef.current.start();
+    } else {
+      glowRef.current?.stop();
+      glowAnim.setValue(0);
+    }
+  }, [isPlaying, glowAnim]);
+
+  const glowOpacity = glowAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.25, 0.7],
+  });
+  const glowScale = glowAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [1, 1.5],
+  });
+
   return (
     <View style={styles.container}>
-      {/* ── Progress bar ──────────────────────────────────── */}
-      <View style={styles.progressBar}>
-        <View style={[styles.progressFill, { width: `${progressPercent}%` }]} />
+      {/* ── Progress bar with thumb ────────────────────────── */}
+      <View style={styles.trackWrapper}>
+        {/* Background track */}
+        <View style={styles.track} />
+
+        {/* Filled portion with subtle glow */}
+        <View style={[styles.fill, { width: `${progressPercent}%` }]} />
+
+        {/* Thumb at current position */}
+        <View style={[styles.thumbAnchor, { left: `${progressPercent}%` }]}>
+          {/* Glow ring (pulses when playing) */}
+          {isPlaying && (
+            <Animated.View
+              style={[
+                styles.thumbGlow,
+                {
+                  opacity: glowOpacity,
+                  transform: [{ scale: glowScale }],
+                },
+              ]}
+            />
+          )}
+          {/* Solid thumb */}
+          <View style={styles.thumb} />
+        </View>
       </View>
 
-      {/* ── Controls row ──────────────────────────────────── */}
+      {/* ── Controls row ───────────────────────────────────── */}
       <View style={styles.row}>
-        <Text style={styles.time}>{formatTime(positionMillis)}</Text>
+        {/* Current time */}
+        <Text style={styles.currentTime}>{formatTime(positionMillis)}</Text>
 
+        {/* Play/Pause button */}
         <TouchableOpacity
           style={styles.playButton}
           onPress={onPlayPause}
-          activeOpacity={0.8}
+          activeOpacity={0.75}
           accessibilityRole="button"
           accessibilityLabel={isPlaying ? 'Pause' : 'Play'}
         >
@@ -79,11 +158,16 @@ export function AudioControls({
           )}
         </TouchableOpacity>
 
-        <Text style={styles.time}>{formatTime(durationMillis)}</Text>
+        {/* Remaining time */}
+        <Text style={styles.remainingTime}>
+          -{formatTime(remainingMs)}
+        </Text>
       </View>
     </View>
   );
 }
+
+// ─── Styles ─────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
   container: {
@@ -91,49 +175,117 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: CONTROLS.bg,
+    backgroundColor: C.bg,
     paddingBottom: 40, // safe area
     zIndex: 100,
   },
-  // ── Progress ────────────────────────────────────────────
-  progressBar: {
-    height: 3,
-    backgroundColor: CONTROLS.progressBg,
+
+  // ── Progress track ─────────────────────────────────────────
+  trackWrapper: {
+    height: THUMB_GLOW_SIZE,
+    justifyContent: 'center',
+    position: 'relative',
+    marginHorizontal: SPACING.lg,
   },
-  progressFill: {
-    height: '100%',
-    backgroundColor: CONTROLS.progressFill,
+
+  track: {
+    height: TRACK_HEIGHT,
+    backgroundColor: C.trackBg,
+    borderRadius: TRACK_HEIGHT / 2,
+    position: 'absolute',
+    left: 0,
+    right: 0,
   },
-  // ── Controls row ────────────────────────────────────────
+
+  fill: {
+    height: TRACK_HEIGHT,
+    backgroundColor: C.trackFill,
+    borderRadius: TRACK_HEIGHT / 2,
+    position: 'absolute',
+    left: 0,
+    // Subtle side glow
+    shadowColor: C.trackFillGlow,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 1,
+    shadowRadius: 4,
+  },
+
+  // Thumb anchor: zero-width container centered on progress point
+  thumbAnchor: {
+    position: 'absolute',
+    width: 0,
+    height: THUMB_GLOW_SIZE,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  thumbGlow: {
+    position: 'absolute',
+    width: THUMB_GLOW_SIZE,
+    height: THUMB_GLOW_SIZE,
+    borderRadius: THUMB_GLOW_SIZE / 2,
+    backgroundColor: C.thumbGlow,
+  },
+
+  thumb: {
+    width: THUMB_SIZE,
+    height: THUMB_SIZE,
+    borderRadius: THUMB_SIZE / 2,
+    backgroundColor: C.thumb,
+    borderWidth: 2.5,
+    borderColor: C.thumbBorder,
+    shadowColor: C.thumbBorder,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.4,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+
+  // ── Controls row ───────────────────────────────────────────
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: SPACING.md,
+    paddingVertical: SPACING.sm + 2,
     paddingHorizontal: SPACING.xl,
     gap: SPACING.xl,
   },
-  time: {
-    fontSize: FONTS.sizes.sm,
-    color: CONTROLS.timeText,
+
+  currentTime: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: C.currentTime,
     fontVariant: ['tabular-nums'],
-    width: 45,
+    width: 52,
     textAlign: 'center',
+    letterSpacing: 0.5,
   },
-  // ── Play button ─────────────────────────────────────────
+
+  remainingTime: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: C.remainingTime,
+    fontVariant: ['tabular-nums'],
+    width: 52,
+    textAlign: 'center',
+    letterSpacing: 0.3,
+  },
+
+  // ── Play button ────────────────────────────────────────────
   playButton: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: CONTROLS.buttonBg,
+    width: PLAY_SIZE,
+    height: PLAY_SIZE,
+    borderRadius: PLAY_SIZE / 2,
+    backgroundColor: C.buttonBg,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#C4933F',
+    shadowColor: C.buttonShadow,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
+    shadowOpacity: 1,
     shadowRadius: 12,
     elevation: 8,
   },
+
   playIcon: {
     width: 0,
     height: 0,
@@ -141,18 +293,20 @@ const styles = StyleSheet.create({
     borderLeftWidth: 18,
     borderTopWidth: 11,
     borderBottomWidth: 11,
-    borderLeftColor: CONTROLS.buttonIcon,
+    borderLeftColor: C.buttonIcon,
     borderTopColor: 'transparent',
     borderBottomColor: 'transparent',
   },
+
   pauseIcon: {
     flexDirection: 'row',
     gap: 5,
   },
+
   pauseBar: {
     width: 5,
     height: 20,
     borderRadius: 2,
-    backgroundColor: CONTROLS.buttonIcon,
+    backgroundColor: C.buttonIcon,
   },
 });

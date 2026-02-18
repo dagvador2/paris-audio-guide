@@ -1,10 +1,10 @@
 /**
  * Composant principal de l'expérience audio immersive.
  * Orchestre la synchronisation audio, la transcription défilante,
- * les images contextuelles et les quiz interactifs.
+ * les images contextuelles, les quiz interactifs et la bannière de section.
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { ImmersiveAudioExperience as ImmersiveAudioExperienceType } from '../../types';
 import { useAudioPlayer } from '../../hooks/useAudioPlayer';
@@ -13,6 +13,7 @@ import { useImmersiveAudioSync } from '../../hooks/useImmersiveAudioSync';
 import { AudioTranscript } from './AudioTranscript';
 import { AudioQuizOverlay } from './AudioQuizOverlay';
 import { AudioControls } from './AudioControls';
+import { SectionBanner } from './SectionBanner';
 
 const BG = '#0D0D11';
 
@@ -33,6 +34,35 @@ export function ImmersiveAudioExperience({
   const audioStore = useAudioStore();
   const [activeQuiz, setActiveQuiz] = useState<any>(null);
   const [hasStarted, setHasStarted] = useState(false);
+
+  // ── Section tracking ──────────────────────────────────────
+  // Extract all sections from transcript segments that have sectionTitle
+  const sections = useMemo(() => {
+    return experience.transcript
+      .filter((seg) => seg.sectionTitle)
+      .map((seg) => ({
+        title: seg.sectionTitle!,
+        subtitle: seg.sectionSubtitle,
+        startTimeMillis: seg.startTimeMillis,
+      }));
+  }, [experience.transcript]);
+
+  // Compute current section based on audio position
+  const currentSection = useMemo(() => {
+    let sectionIndex = -1;
+    for (let i = sections.length - 1; i >= 0; i--) {
+      if (audioStore.positionMillis >= sections[i].startTimeMillis) {
+        sectionIndex = i;
+        break;
+      }
+    }
+    if (sectionIndex < 0) return null;
+    return {
+      title: sections[sectionIndex].title,
+      subtitle: sections[sectionIndex].subtitle,
+      index: sectionIndex,
+    };
+  }, [sections, audioStore.positionMillis]);
 
   // Synchronisation audio <-> UI
   const syncHook = useImmersiveAudioSync({
@@ -84,8 +114,8 @@ export function ImmersiveAudioExperience({
 
       onQuizAnswered?.(activeQuiz.id, correct, responseTimeMs);
 
-      // @ts-ignore
-      syncHook.completeQuiz?.(activeQuiz.id);
+      // Compléter le quiz → débloque le segment « réponse » dans le transcript
+      syncHook.completeQuiz(activeQuiz.id);
 
       setActiveQuiz(null);
 
@@ -110,6 +140,14 @@ export function ImmersiveAudioExperience({
 
   return (
     <View style={styles.container}>
+      {/* Bannière de section persistante en haut */}
+      <SectionBanner
+        sectionTitle={currentSection?.title ?? null}
+        sectionSubtitle={currentSection?.subtitle ?? null}
+        sectionIndex={currentSection?.index ?? 0}
+        totalSections={sections.length}
+      />
+
       {/* Transcription scrollable avec highlighting */}
       <AudioTranscript
         segments={syncHook.revealedSegments}

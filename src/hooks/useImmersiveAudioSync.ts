@@ -2,6 +2,13 @@
  * Hook de synchronisation pour l'expérience audio immersive.
  * Gère la révélation progressive des segments, images et quiz
  * en fonction de la position audio actuelle.
+ *
+ * Quiz timing aligné sur les bornes SRT :
+ *   - Chaque quiz.triggerTimeMillis correspond au endTimeMillis du segment
+ *     « question » (la frontière exacte issue du SRT Whisper).
+ *   - Les segments « réponse » (dont le startTimeMillis = quiz.triggerTimeMillis)
+ *     sont bloqués tant que le quiz n'est pas complété, empêchant le SYNC_BUFFER
+ *     de révéler la réponse avant que le quiz ne s'affiche.
  */
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
@@ -26,10 +33,12 @@ interface UseImmersiveAudioSyncReturn {
   activeImages: AudioContextImage[];
   activeQuiz: AudioQuiz | null;
   completedQuizIds: string[];
+  completeQuiz: (quizId: string) => void;
   revealSegmentManually: (segmentId: string) => void;
 }
 
-const SYNC_BUFFER_MS = 200; // Tolérance de synchronisation ±200ms
+// Segments are revealed slightly ahead for smooth appearance
+const SYNC_BUFFER_MS = 200;
 
 export function useImmersiveAudioSync({
   experience,
@@ -49,6 +58,21 @@ export function useImmersiveAudioSync({
     () => Math.floor(positionMillis / 100) * 100,
     [positionMillis]
   );
+
+  // ── Quiz boundary map ────────────────────────────────────────
+  // Maps quiz.triggerTimeMillis → quiz.id for pending quizzes.
+  // Segments whose startTimeMillis matches a pending quiz boundary
+  // are held back until the quiz is answered.
+  const pendingQuizBoundaries = useMemo(() => {
+    if (!experience.quizzes) return new Map<number, string>();
+    const map = new Map<number, string>();
+    experience.quizzes.forEach((quiz) => {
+      if (!completedQuizIds.includes(quiz.id)) {
+        map.set(quiz.triggerTimeMillis, quiz.id);
+      }
+    });
+    return map;
+  }, [experience.quizzes, completedQuizIds]);
 
   // Segments révélés (ceux dont le startTime est passé)
   const revealedSegments = useMemo(() => {
@@ -84,18 +108,20 @@ export function useImmersiveAudioSync({
   useEffect(() => {
     const currentPos = throttledPosition;
 
-    // 1. Révéler les segments dont le temps est passé
+    // 1. Révéler les segments dont le temps est passé.
+    //    Les segments « réponse » (startTime = quiz boundary) sont bloqués
+    //    tant que le quiz correspondant n'est pas complété.
     const segmentsToReveal = experience.transcript.filter(
       (seg) =>
         seg.startTimeMillis <= currentPos + SYNC_BUFFER_MS &&
-        !revealedSegmentIds.includes(seg.id)
+        !revealedSegmentIds.includes(seg.id) &&
+        !pendingQuizBoundaries.has(seg.startTimeMillis)
     );
 
     if (segmentsToReveal.length > 0) {
       const newIds = segmentsToReveal.map((s) => s.id);
       setRevealedSegmentIds((prev) => [...prev, ...newIds]);
 
-      // Callback pour chaque nouveau segment
       segmentsToReveal.forEach((seg) => {
         onSegmentRevealed?.(seg);
       });
@@ -113,7 +139,6 @@ export function useImmersiveAudioSync({
         const newImageIds = imagesToDisplay.map((i) => i.id);
         setDisplayedImageIds((prev) => [...prev, ...newImageIds]);
 
-        // Callback pour chaque nouvelle image
         imagesToDisplay.forEach((img) => {
           onImageTriggered?.(img);
         });
@@ -134,13 +159,15 @@ export function useImmersiveAudioSync({
       }
     }
 
-    // 3. Déclencher les quiz au bon moment
+    // 3. Déclencher les quiz exactement sur la borne SRT.
+    //    Le triggerTimeMillis correspond au endTimeMillis du segment « question »
+    //    dans le transcript (frontière Whisper). Pas de SYNC_BUFFER ici pour
+    //    ne pas déclencher le quiz avant que la question ne soit finie.
     if (experience.quizzes && !activeQuizId) {
       const quizToTrigger = experience.quizzes.find(
         (quiz) =>
-          Math.abs(quiz.triggerTimeMillis - currentPos) < SYNC_BUFFER_MS &&
-          !completedQuizIds.includes(quiz.id) &&
-          quiz.triggerTimeMillis <= currentPos
+          quiz.triggerTimeMillis <= currentPos &&
+          !completedQuizIds.includes(quiz.id)
       );
 
       if (quizToTrigger) {
@@ -155,12 +182,13 @@ export function useImmersiveAudioSync({
     displayedImageIds,
     activeQuizId,
     completedQuizIds,
+    pendingQuizBoundaries,
     onQuizTriggered,
     onSegmentRevealed,
     onImageTriggered,
   ]);
 
-  // Fonction publique pour marquer un quiz comme complété
+  // Marquer un quiz comme complété — cela débloque le segment réponse
   const completeQuiz = useCallback((quizId: string) => {
     setCompletedQuizIds((prev) => [...prev, quizId]);
     setActiveQuizId(null);
@@ -171,8 +199,7 @@ export function useImmersiveAudioSync({
     activeImages,
     activeQuiz,
     completedQuizIds,
-    revealSegmentManually,
-    // @ts-ignore - Export completeQuiz for external use
     completeQuiz,
+    revealSegmentManually,
   };
 }
